@@ -38,33 +38,44 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Selectors" type="HBoxContainer" parent="VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Selectors" type="HBoxContainer" parent="VBoxContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
 script = ExtResource("1_1bvp3")
 
-[node name="ViewsSpinBox" type="SpinBox" parent="VBoxContainer/Selectors"]
+[node name="ViewsSpinBox" type="SpinBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
 max_value = 3.0
 rounded = true
 suffix = "views"
 
-[node name="ImageInput" type="LineEdit" parent="VBoxContainer/Selectors"]
+[node name="ImageInput" type="LineEdit" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 placeholder_text = "Image"
 
-[node name="PrevButton" type="Button" parent="VBoxContainer/Selectors"]
+[node name="PrevButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
 shortcut = SubResource("Shortcut_272bh")
 text = "Previous"
 
-[node name="NextButton" type="Button" parent="VBoxContainer/Selectors"]
+[node name="NextButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
 shortcut = SubResource("Shortcut_5vw27")
 text = "Next
 "
 
-[node name="CheckBox" type="CheckBox" parent="VBoxContainer/Selectors"]
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
 button_pressed = true
 text = "Sync view"
@@ -80,15 +91,15 @@ dt_view_scene = ExtResource("3_1bvp3")
 [node name="Ground Truths" parent="VBoxContainer/ViewController" instance=ExtResource("3_h2yge")]
 layout_mode = 2
 
-[connection signal="image_selected" from="VBoxContainer/Selectors" to="VBoxContainer/ViewController" method="load_image_pair"]
-[connection signal="value_changed" from="VBoxContainer/Selectors/ViewsSpinBox" to="VBoxContainer/Selectors" method="_on_spinbox_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/Selectors/ViewsSpinBox" to="VBoxContainer/ViewController" method="set_num_views"]
-[connection signal="text_submitted" from="VBoxContainer/Selectors/ImageInput" to="VBoxContainer/Selectors" method="_load_image"]
-[connection signal="pressed" from="VBoxContainer/Selectors/PrevButton" to="VBoxContainer/Selectors" method="_previous_image"]
-[connection signal="pressed" from="VBoxContainer/Selectors/NextButton" to="VBoxContainer/Selectors" method="_next_image"]
-[connection signal="toggled" from="VBoxContainer/Selectors/CheckBox" to="VBoxContainer/ViewController" method="set_view_sync"]
-[connection signal="on_dataset_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/Selectors" method="_dataset_folder_selected"]
-[connection signal="on_detections_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/Selectors" method="_detections_folder_selected"]
+[connection signal="image_selected" from="VBoxContainer/PanelContainer/MarginContainer/Selectors" to="VBoxContainer/ViewController" method="load_image_pair"]
+[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/ViewsSpinBox" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_on_spinbox_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/ViewsSpinBox" to="VBoxContainer/ViewController" method="set_num_views"]
+[connection signal="text_submitted" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/ImageInput" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_load_image"]
+[connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/PrevButton" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_previous_image"]
+[connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/NextButton" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_next_image"]
+[connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/CheckBox" to="VBoxContainer/ViewController" method="set_view_sync"]
+[connection signal="on_dataset_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_dataset_folder_selected"]
+[connection signal="on_detections_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_detections_folder_selected"]
 [connection signal="on_folder_selected" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_dataset_folder_selected"]
 [connection signal="panzoom_sync" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_panzoom_sync"]
 [connection signal="segment_clicked" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_segment_clicked" binds= ["gt", -1]]

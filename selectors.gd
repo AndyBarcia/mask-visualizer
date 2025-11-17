@@ -221,8 +221,10 @@ func _update_visible_image_ids() -> void:
 	if image_ids.is_empty():
 		return
 
-	current_image_id = image_ids[0]
-	image_input_node.text = current_image_id
+	# Check if the current image id is present in the list of visible images.
+	if current_image_id not in image_ids:
+		current_image_id = image_ids[0]
+		image_input_node.text = current_image_id
 	_load_image(current_image_id)
 
 func _next_image() -> void:

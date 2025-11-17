@@ -22,6 +22,22 @@ shader_parameter/selected_id = -1.0
 size_flags_horizontal = 3
 script = ExtResource("1_b7sh5")
 
+[node name="NameContainer" type="PanelContainer" parent="."]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="NameContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Label" type="Label" parent="NameContainer/MarginContainer"]
+layout_mode = 2
+text = "No mask selected"
+clip_text = true
+text_overrun_behavior = 3
+
 [node name="Image" type="ColorRect" parent="."]
 material = SubResource("ShaderMaterial_7mycd")
 layout_mode = 2
@@ -33,26 +49,37 @@ script = ExtResource("3_lm58f")
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
 layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
 
-[node name="Load" type="Button" parent="PanelContainer/HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Load" type="Button" parent="PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 icon = ExtResource("5_ieupc")
 
-[node name="FileDialog" type="FileDialog" parent="PanelContainer/HBoxContainer/Load"]
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/HBoxContainer/Load"]
 title = "Open a Directory"
 file_mode = 2
 access = 2
 use_native_dialog = true
 
-[node name="Label" type="Label" parent="PanelContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
-text = "No mask selected"
-horizontal_alignment = 1
+size_flags_horizontal = 3
+text = "No folder selected"
 vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+text_direction = 2
 
 [connection signal="panzoom_sync" from="Image" to="." method="_on_panzoom_sync"]
 [connection signal="segment_clicked" from="Image" to="." method="_on_segment_clicked"]
-[connection signal="pressed" from="PanelContainer/HBoxContainer/Load" to="PanelContainer/HBoxContainer/Load/FileDialog" method="set_visible" binds= [true]]
-[connection signal="dir_selected" from="PanelContainer/HBoxContainer/Load/FileDialog" to="." method="_on_folder_selected"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Load" to="PanelContainer/MarginContainer/HBoxContainer/Load/FileDialog" method="set_visible" binds= [true]]
+[connection signal="dir_selected" from="PanelContainer/MarginContainer/HBoxContainer/Load/FileDialog" to="." method="_on_folder_selected"]

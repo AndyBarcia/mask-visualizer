@@ -13,14 +13,14 @@ func set_gt_image(image, panoptic_image, segments) -> void:
 
 func set_selected_segment(segment_id: int) -> void:
 	if segment_id == -1:
-		$PanelContainer/HBoxContainer/Label.text = "No mask selected"
+		$NameContainer/MarginContainer/Label.text = "No mask selected"
 		$Image.set_selected_id(segment_id)
 		return
 	
 	var gt_cat := "Unknown"
 	if current_segments.has(segment_id):
 		gt_cat = str(current_segments[segment_id])
-	$PanelContainer/HBoxContainer/Label.text = gt_cat
+	$NameContainer/MarginContainer/Label.text = gt_cat
 	$Image.set_selected_id(segment_id)
 	
 func _on_segment_clicked(segment_id: int) -> void:
@@ -39,9 +39,10 @@ func set_panzoom(pan: Vector2, zoom: float) -> void:
 	$Image._update_shader_zoompan()
 
 func set_panzoom_like(other) -> void:
-	$Image.pan = other.get_child(0).pan
-	$Image.zoom = other.get_child(0).zoom
+	$Image.pan = other.get_child(1).pan
+	$Image.zoom = other.get_child(1).zoom
 	$Image._update_shader_zoompan()
 
 func _on_folder_selected(folder: String):
 	emit_signal("on_folder_selected", folder)
+	$PanelContainer/MarginContainer/HBoxContainer/Label.text = folder

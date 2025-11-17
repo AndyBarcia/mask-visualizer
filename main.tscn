@@ -1,0 +1,163 @@
+[gd_scene load_steps=12 format=3 uid="uid://hw8du647wlpi"]
+
+[ext_resource type="Script" uid="uid://dyx8bh3pjmm1u" path="res://selectors.gd" id="1_1bvp3"]
+[ext_resource type="Shader" uid="uid://f2s5fstgtil4" path="res://mask.gdshader" id="1_ig7tw"]
+[ext_resource type="Texture2D" uid="uid://dsyl5v0xnxvst" path="res://trained_logits_dice_py.png" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://cvjvscs8va6h2" path="res://controller.gd" id="2_7mycd"]
+[ext_resource type="Script" uid="uid://c37mj6sx4doqw" path="res://ground_truths.gd" id="3_h2yge"]
+[ext_resource type="PackedScene" uid="uid://bijqhqoj3kycm" path="res://detections.tscn" id="6_7mycd"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_7mycd"]
+device = -1
+keycode = 81
+unicode = 113
+
+[sub_resource type="Shortcut" id="Shortcut_272bh"]
+events = [SubResource("InputEventKey_7mycd")]
+
+[sub_resource type="InputEventKey" id="InputEventKey_272bh"]
+device = -1
+keycode = 69
+unicode = 101
+echo = true
+
+[sub_resource type="Shortcut" id="Shortcut_5vw27"]
+events = [SubResource("InputEventKey_272bh")]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7mycd"]
+shader = ExtResource("1_ig7tw")
+shader_parameter/base_image = ExtResource("2_0xm2m")
+shader_parameter/control_size = Vector2(1920, 1080)
+shader_parameter/zoom = 1.0
+shader_parameter/pan = Vector2(0.5, 0.5)
+shader_parameter/bar_color = Color(0, 0, 0, 1)
+shader_parameter/overlay_alpha = 0.4
+shader_parameter/highlight_alpha = 0.85
+shader_parameter/selected_id = -1.0
+
+[node name="main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Selectors" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+script = ExtResource("1_1bvp3")
+
+[node name="DatasetSelector" type="Button" parent="VBoxContainer/Selectors"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Select Dataset"
+alignment = 0
+
+[node name="FileDialog" type="FileDialog" parent="VBoxContainer/Selectors/DatasetSelector"]
+oversampling_override = 1.0
+title = "Open a Directory"
+initial_position = 4
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="ViewsSpinBox" type="SpinBox" parent="VBoxContainer/Selectors"]
+layout_mode = 2
+max_value = 3.0
+rounded = true
+suffix = "views"
+
+[node name="ViewOptionButton" type="OptionButton" parent="VBoxContainer/Selectors"]
+layout_mode = 2
+allow_reselect = true
+
+[node name="FileDialog" type="FileDialog" parent="VBoxContainer/Selectors/ViewOptionButton"]
+oversampling_override = 1.0
+title = "Open a Directory"
+initial_position = 4
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="DetectionSelector" type="Button" parent="VBoxContainer/Selectors"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Select Detections
+"
+alignment = 0
+
+[node name="ImageInput" type="LineEdit" parent="VBoxContainer/Selectors"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+placeholder_text = "Image"
+
+[node name="PrevButton" type="Button" parent="VBoxContainer/Selectors"]
+layout_mode = 2
+shortcut = SubResource("Shortcut_272bh")
+text = "Previous"
+
+[node name="NextButton" type="Button" parent="VBoxContainer/Selectors"]
+layout_mode = 2
+shortcut = SubResource("Shortcut_5vw27")
+text = "Next
+"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/Selectors"]
+layout_mode = 2
+text = "Sync view"
+
+[node name="ViewController" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("2_7mycd")
+gt_view_path = NodePath("Ground Truths")
+label_node = NodePath("../BottomPanel/Label")
+dt_view_scene = ExtResource("6_7mycd")
+
+[node name="Ground Truths" type="ColorRect" parent="VBoxContainer/ViewController"]
+material = SubResource("ShaderMaterial_7mycd")
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0, 0, 0, 1)
+script = ExtResource("3_h2yge")
+label_node = NodePath("../../BottomPanel/Label")
+image_input_node = NodePath("../../Selectors/ImageInput")
+
+[node name="BottomPanel" type="Panel" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/BottomPanel"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_right = 72.0
+grow_vertical = 2
+text = "No mask selected"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="image_selected" from="VBoxContainer/Selectors" to="VBoxContainer/ViewController" method="load_image_pair"]
+[connection signal="pressed" from="VBoxContainer/Selectors/DatasetSelector" to="VBoxContainer/Selectors/DatasetSelector/FileDialog" method="set_visible" binds= [true]]
+[connection signal="dir_selected" from="VBoxContainer/Selectors/DatasetSelector/FileDialog" to="VBoxContainer/Selectors" method="_dataset_folder_selected"]
+[connection signal="value_changed" from="VBoxContainer/Selectors/ViewsSpinBox" to="VBoxContainer/Selectors" method="_on_spinbox_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/Selectors/ViewsSpinBox" to="VBoxContainer/ViewController" method="set_num_views"]
+[connection signal="item_selected" from="VBoxContainer/Selectors/ViewOptionButton" to="VBoxContainer/Selectors" method="_on_slot_dropdown_item_selected"]
+[connection signal="dir_selected" from="VBoxContainer/Selectors/ViewOptionButton/FileDialog" to="VBoxContainer/Selectors" method="_detections_folder_selected"]
+[connection signal="pressed" from="VBoxContainer/Selectors/DetectionSelector" to="VBoxContainer/Selectors/ViewOptionButton/FileDialog" method="set_visible" binds= [true]]
+[connection signal="text_submitted" from="VBoxContainer/Selectors/ImageInput" to="VBoxContainer/Selectors" method="_load_image"]
+[connection signal="pressed" from="VBoxContainer/Selectors/PrevButton" to="VBoxContainer/Selectors" method="_previous_image"]
+[connection signal="pressed" from="VBoxContainer/Selectors/NextButton" to="VBoxContainer/Selectors" method="_next_image"]
+[connection signal="toggled" from="VBoxContainer/Selectors/CheckBox" to="VBoxContainer/ViewController" method="set_view_sync"]
+[connection signal="panzoom_sync" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_panzoom_sync" binds= ["gt"]]
+[connection signal="segment_clicked" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_segment_clicked" binds= ["gt", -1]]

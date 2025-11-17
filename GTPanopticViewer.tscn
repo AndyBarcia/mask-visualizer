@@ -1,0 +1,58 @@
+[gd_scene load_steps=7 format=3 uid="uid://bhrmqeky1ipix"]
+
+[ext_resource type="Script" uid="uid://did7ynyv7dj6j" path="res://gt_panoptic_viewer.gd" id="1_b7sh5"]
+[ext_resource type="Shader" uid="uid://f2s5fstgtil4" path="res://mask.gdshader" id="1_mk64h"]
+[ext_resource type="Texture2D" uid="uid://dsyl5v0xnxvst" path="res://trained_logits_dice_py.png" id="2_ms8i6"]
+[ext_resource type="Script" uid="uid://c37mj6sx4doqw" path="res://PanopticRect.gd" id="3_lm58f"]
+[ext_resource type="Texture2D" uid="uid://gob3021cby5h" path="res://icon_load.svg" id="5_ieupc"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7mycd"]
+resource_local_to_scene = true
+shader = ExtResource("1_mk64h")
+shader_parameter/base_image = ExtResource("2_ms8i6")
+shader_parameter/control_size = Vector2(1920, 1080)
+shader_parameter/zoom = 1.0
+shader_parameter/pan = Vector2(0.5, 0.5)
+shader_parameter/bar_color = Color(0, 0, 0, 1)
+shader_parameter/overlay_alpha = 0.4
+shader_parameter/highlight_alpha = 0.85
+shader_parameter/selected_id = -1.0
+
+[node name="Ground Truths" type="VBoxContainer"]
+size_flags_horizontal = 3
+script = ExtResource("1_b7sh5")
+
+[node name="Image" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_7mycd")
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0, 0, 0, 1)
+script = ExtResource("3_lm58f")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="Load" type="Button" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+icon = ExtResource("5_ieupc")
+
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/HBoxContainer/Load"]
+title = "Open a Directory"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="Label" type="Label" parent="PanelContainer/HBoxContainer"]
+layout_mode = 2
+text = "No mask selected"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="panzoom_sync" from="Image" to="." method="_on_panzoom_sync"]
+[connection signal="segment_clicked" from="Image" to="." method="_on_segment_clicked"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/Load" to="PanelContainer/HBoxContainer/Load/FileDialog" method="set_visible" binds= [true]]
+[connection signal="dir_selected" from="PanelContainer/HBoxContainer/Load/FileDialog" to="." method="_on_folder_selected"]

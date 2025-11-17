@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3 uid="uid://ce1pl6oxnmy88"]
+
+[ext_resource type="PackedScene" uid="uid://bhrmqeky1ipix" path="res://GTPanopticViewer.tscn" id="1_p2fb0"]
+[ext_resource type="Script" uid="uid://b1hspmwj08yq1" path="res://dt_panoptic_viewer.gd" id="2_60rok"]
+[ext_resource type="Shader" uid="uid://f2s5fstgtil4" path="res://mask.gdshader" id="3_ajdpf"]
+[ext_resource type="Texture2D" uid="uid://dsyl5v0xnxvst" path="res://trained_logits_dice_py.png" id="4_n8vjq"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vtwu1"]
+resource_local_to_scene = true
+shader = ExtResource("3_ajdpf")
+shader_parameter/base_image = ExtResource("4_n8vjq")
+shader_parameter/control_size = Vector2(1920, 1080)
+shader_parameter/zoom = 1.0
+shader_parameter/pan = Vector2(0.5, 0.5)
+shader_parameter/bar_color = Color(0, 0, 0, 1)
+shader_parameter/overlay_alpha = 0.4
+shader_parameter/highlight_alpha = 0.85
+shader_parameter/selected_id = -1.0
+
+[node name="Ground Truths" instance=ExtResource("1_p2fb0")]
+script = ExtResource("2_60rok")
+
+[node name="Image" parent="." index="0"]
+material = SubResource("ShaderMaterial_vtwu1")

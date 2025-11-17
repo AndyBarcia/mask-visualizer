@@ -6,7 +6,7 @@ signal panzoom_sync(pan: Vector2, zoom: float)
 @export var zoom_min: float = 0.2
 @export var zoom_max: float = 20.0
 
-var sync_view: bool = false
+var sync_view: bool = true
 
 var zoom: float = 1.0
 var pan: Vector2 = Vector2(0.5, 0.5)

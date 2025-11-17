@@ -4,6 +4,9 @@ extends HBoxContainer
 @export var label_node: NodePath
 @export var dt_view_scene: PackedScene
 
+signal on_dataset_folder_selected(folder: String)
+signal on_detections_folder_selected(folder: String, view: int)
+
 var gt_view
 var dt_views: Array = []                          # actual dt view nodes
 
@@ -47,10 +50,10 @@ func set_num_views(num_views: int) -> void:
 		# Auto-connect signals for the new instance only.
 		dt_instance.segment_clicked.connect(_on_segment_clicked.bind("dt", i))
 		dt_instance.panzoom_sync.connect(_on_panzoom_sync)
+		dt_instance.on_folder_selected.connect(_on_detections_folder_selected.bind(i))
 
 # Called from the image_selected signal:
-# signal image_selected(image_id, base_img, gt_img, gt_segments, det_images, det_segments_array, det_matches_array)
-func load_image_pair(image_id, base_img, gt_img, gt_segments, det_images, det_segments_array, matches_array) -> void:
+func load_image_pair(base_img, gt_img, gt_segments, det_images, det_segments_array, matches_array) -> void:
 	# Store categories
 	gt_categories = gt_segments
 	dt_categories_list = det_segments_array
@@ -60,37 +63,20 @@ func load_image_pair(image_id, base_img, gt_img, gt_segments, det_images, det_se
 	_build_match_maps(matches_array)
 
 	# Update GT view: only GT info here
-	gt_view.update_shader_image(
-		image_id,
+	gt_view.set_gt_image(
 		base_img,
 		gt_img,
-		gt_segments,
-		null,       # det_img
-		{},         # det_segments
-		{}          # matches
+		gt_categories
 	)
 
 	# Update all DT views with their own detection info
 	for i in range(dt_views.size()):
-		var det_img = null
-		var det_segments: Dictionary = {}
-		var matches: Dictionary = {}
-
-		if i < det_images.size():
-			det_img = det_images[i]
-		if i < det_segments_array.size():
-			det_segments = det_segments_array[i]
-		if i < matches_array.size():
-			matches = matches_array[i]
-
-		dt_views[i].update_shader_image(
-			image_id,
+		dt_views[i].set_dt_image(
 			base_img,
-			gt_img,
-			gt_segments,
-			det_img,
-			det_segments,
-			matches
+			det_images[i],
+			det_segments_array[i],
+			pred_to_gt_list[i],
+			pred_to_iou_list[i]
 		)
 
 func _build_match_maps(matches_array: Array) -> void:
@@ -126,10 +112,9 @@ func _build_match_maps(matches_array: Array) -> void:
 func _on_segment_clicked(seg_id: int, kind: String, dt_view_idx: int) -> void:
 	if seg_id == -1:
 		# Clear selection in all views
-		gt_view.set_selected_id(-1)
+		gt_view.set_selected_segment(-1)
 		for v in dt_views:
-			v.set_selected_id(-1)
-		get_node(label_node).text = ""
+			v.set_selected_segment(-1)
 		return
 
 	# 1) Decide GT id (if any)
@@ -145,22 +130,16 @@ func _on_segment_clicked(seg_id: int, kind: String, dt_view_idx: int) -> void:
 
 	# 2) Build per-view predictions + IoUs for that GT id (if we have one)
 	var per_view_pred_ids: Array = []
-	var per_view_ious: Array = []
 	per_view_pred_ids.resize(dt_views.size())
-	per_view_ious.resize(dt_views.size())
 
 	for i in range(dt_views.size()):
 		per_view_pred_ids[i] = -1
-		per_view_ious[i] = 0.0
 
 		if gt_id != -1 and i < gt_to_pred_list.size():
 			var dict_for_view: Dictionary = gt_to_pred_list[i]
 			if dict_for_view.has(gt_id):
 				var pred_id = int(dict_for_view[gt_id])
 				per_view_pred_ids[i] = pred_id
-
-				var iou_dict_for_view: Dictionary = gt_to_iou_list[i]
-				per_view_ious[i] = float(iou_dict_for_view.get(gt_id, 0.0))
 
 	# 2b) SPECIAL CASE: clicking a DT segment with **no GT match**
 	#     -> we still want that detection selected and labeled.
@@ -169,72 +148,26 @@ func _on_segment_clicked(seg_id: int, kind: String, dt_view_idx: int) -> void:
 		if dt_view_idx >= 0 and dt_view_idx < per_view_pred_ids.size():
 			per_view_pred_ids[dt_view_idx] = seg_id
 
-			# If we happen to have an IoU stored, we can show it; else it stays 0.0
-			if dt_view_idx < pred_to_iou_list.size():
-				var iou_dict: Dictionary = pred_to_iou_list[dt_view_idx]
-				if iou_dict.has(seg_id):
-					per_view_ious[dt_view_idx] = float(iou_dict[seg_id])
-
 	# 3) Update visuals
-	gt_view.set_selected_id(gt_id)
+	gt_view.set_selected_segment(gt_id)
 	for i in range(dt_views.size()):
-		dt_views[i].set_selected_id(per_view_pred_ids[i])
-
-	# 4) Update label once, with precomputed info
-	_update_label(gt_id, per_view_pred_ids, per_view_ious)
-
-func _update_label(gt_id: int, per_view_pred_ids: Array, per_view_ious: Array) -> void:
-	var lines: Array[String] = []
-
-	# GT line
-	if gt_id != -1:
-		var gt_cat := "unknown"
-		if gt_categories.has(gt_id):
-			gt_cat = str(gt_categories[gt_id])
-		lines.append("GT: %s (id: %d)" % [gt_cat, gt_id])
-	else:
-		lines.append("GT: none selected")
-
-	# Per-view DT lines
-	for i in range(dt_views.size()):
-		var pred_id_i := -1
-		var iou_i := 0.0
-
-		if i < per_view_pred_ids.size():
-			pred_id_i = int(per_view_pred_ids[i])
-		if i < per_view_ious.size():
-			iou_i = float(per_view_ious[i])
-
-		var dt_cat := "unknown"
-		if pred_id_i != -1 and i < dt_categories_list.size():
-			var dt_cats: Dictionary = dt_categories_list[i]
-			if dt_cats.has(pred_id_i):
-				dt_cat = str(dt_cats[pred_id_i])
-
-		var line := "View %d: " % (i + 1)
-		if pred_id_i == -1:
-			line += "—"
-		else:
-			line += "%s (id: %d, IoU: %.3f)" % [dt_cat, pred_id_i, iou_i]
-
-		lines.append(line)
-
-	get_node(label_node).text = " | ".join(lines)
+		dt_views[i].set_selected_segment(per_view_pred_ids[i])
 
 func set_view_sync(sync_view: bool) -> void:
-	gt_view.sync_view = sync_view
-	for v in dt_views:
-		v.sync_view = sync_view
 	# Start everyone from the GT view's current pan/zoom
-	_on_panzoom_sync(gt_view.pan, gt_view.zoom)
+	gt_view.set_sync_view(sync_view)
+	for v in dt_views:
+		v.set_sync_view(sync_view)
+		v.set_panzoom_like(gt_view)
 
 func _on_panzoom_sync(pan: Vector2, zoom: float) -> void:
 	# A DT view changed -> sync GT and all DT views to it
-	gt_view.pan = pan
-	gt_view.zoom = zoom
-	gt_view._update_shader_zoompan()
-
+	gt_view.set_panzoom(pan, zoom)
 	for v in dt_views:
-		v.pan = pan
-		v.zoom = zoom
-		v._update_shader_zoompan()
+		v.set_panzoom(pan, zoom)
+
+func _on_dataset_folder_selected(folder: String) -> void:
+	emit_signal("on_dataset_folder_selected", folder)
+
+func _on_detections_folder_selected(folder: String, view: int) -> void:
+	emit_signal("on_detections_folder_selected", folder, view)

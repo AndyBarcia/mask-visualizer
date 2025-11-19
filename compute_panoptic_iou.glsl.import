@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cg8vasowv7x4d"
+path="res://.godot/imported/compute_panoptic_iou.glsl-7fe7e614af837052296ba9e73992ce8d.res"
+
+[deps]
+
+source_file="res://compute_panoptic_iou.glsl"
+dest_files=["res://.godot/imported/compute_panoptic_iou.glsl-7fe7e614af837052296ba9e73992ce8d.res"]
+
+[params]
+

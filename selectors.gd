@@ -11,7 +11,6 @@ var detections_dirs: Array[String] = []          # one path per slot
 
 # Per-slot caches (index == slot index)
 var per_view_category_maps: Array = []    # Array[Dictionary image_id -> {seg_id: cat_name}]
-var per_view_matching_maps: Array = []               # Array[Dictionary image_id -> matching]
 
 # Image id lists
 var gt_image_ids: Array[String] = []      # image_ids from GT JSON
@@ -30,14 +29,11 @@ func _on_spinbox_value_changed(value: float) -> void:
 	# Resize per-slot arrays
 	detections_dirs.resize(count)
 	per_view_category_maps.resize(count)
-	per_view_matching_maps.resize(count)
 
 	# Ensure each slot has Dictionaries
 	for i in range(count):
 		if typeof(per_view_category_maps[i]) != TYPE_DICTIONARY:
 			per_view_category_maps[i] = {}
-		if typeof(per_view_matching_maps[i]) != TYPE_DICTIONARY:
-			per_view_matching_maps[i] = {}
 	_update_visible_image_ids()
 
 func _dataset_folder_selected(dir: String) -> void:
@@ -148,7 +144,6 @@ func _detections_folder_selected(dir: String, view: int) -> void:
 		return
 
 	var local_det_maps: Dictionary = {}
-	var local_match_maps: Dictionary = {}
 
 	for entry in data:
 		if typeof(entry) != TYPE_DICTIONARY:
@@ -179,15 +174,11 @@ func _detections_folder_selected(dir: String, view: int) -> void:
 
 		local_det_maps[img_key] = seg_map
 
-		var matches = entry.get("panoptic_matching", {})
-		local_match_maps[img_key] = matches
-
 	if local_det_maps.is_empty():
 		push_warning("No detection entries with image_name found in detections.json for view %d." % view)
 
 	# Cache into per-slot arrays
 	per_view_category_maps[view] = local_det_maps
-	per_view_matching_maps[view] = local_match_maps
 	detections_dirs[view] = dir
 
 	_update_visible_image_ids()
@@ -267,23 +258,18 @@ func _load_image(image_id: String) -> void:
 	var current_segment_categories = segment_category_maps[image_id]
 
 	# Gather detection info for ALL slots
-	var det_images: Array = []
+	var det_images: Array[Image] = []
 	var det_segments_array: Array = []
-	var det_matches_array: Array = []
 
 	for slot in range(detections_dirs.size()):
 		var slot_dir := detections_dirs[slot] if slot < detections_dirs.size() else ""
 		var slot_det_maps: Dictionary = {}
-		var slot_match_maps: Dictionary = {}
 
 		if slot < per_view_category_maps.size():
 			slot_det_maps = per_view_category_maps[slot]
-		if slot < per_view_matching_maps.size():
-			slot_match_maps = per_view_matching_maps[slot]
 
 		# Per-slot categories and matches for this image
 		var slot_det_categories = slot_det_maps.get(image_id, {})
-		var slot_matches = slot_match_maps.get(image_id, {})
 
 		# Per-slot detection image
 		var det_image: Image = null
@@ -296,7 +282,6 @@ func _load_image(image_id: String) -> void:
 
 		det_images.append(det_image)
 		det_segments_array.append(slot_det_categories)
-		det_matches_array.append(slot_matches)
 
 	# Emit everything: GT + detections (all slots)
 	image_selected.emit(
@@ -305,7 +290,6 @@ func _load_image(image_id: String) -> void:
 		current_segment_categories,   # GT segment_id -> category_name
 		det_images,             # Array[Image] per slot (can have null entries)
 		det_segments_array,     # Array[Dictionary] per slot
-		det_matches_array       # Array per slot
 	)
 
 	current_image_id = image_id

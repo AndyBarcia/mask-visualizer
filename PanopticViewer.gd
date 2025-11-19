@@ -7,11 +7,11 @@ signal on_folder_selected(folder: String)
 
 var current_segments = []
 
-func set_gt_image(image, panoptic_image, segments) -> void:
+func set_panoptic_image(image, panoptic_image, segments) -> void:
 	$Image.update_shader_image(image, panoptic_image)
 	current_segments = segments
 
-func set_selected_segment(segment_id: int) -> void:
+func set_selected_segment(segment_id: int, iou: float) -> void:
 	if segment_id == -1:
 		$NameContainer/MarginContainer/Label.text = "No mask selected"
 		$Image.set_selected_id(segment_id)
@@ -19,13 +19,17 @@ func set_selected_segment(segment_id: int) -> void:
 	
 	var gt_cat := "Unknown"
 	if current_segments.has(segment_id):
-		gt_cat = str(current_segments[segment_id])
-	$NameContainer/MarginContainer/Label.text = gt_cat
+		gt_cat = str(current_segments[segment_id]).capitalize()
+	
+	if iou != 0.0:
+		$NameContainer/MarginContainer/Label.text = "%s (matched with IoU %.2f%%)" % [gt_cat, iou*100]
+	else:
+		$NameContainer/MarginContainer/Label.text = gt_cat
 	$Image.set_selected_id(segment_id)
 	
 func _on_segment_clicked(segment_id: int) -> void:
 	emit_signal("segment_clicked", segment_id)
-	set_selected_segment(segment_id)
+	set_selected_segment(segment_id, 0.0)
 
 func _on_panzoom_sync(pan: Vector2, zoom: float) -> void:
 	emit_signal("panzoom_sync", pan, zoom)

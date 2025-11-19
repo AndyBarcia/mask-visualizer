@@ -1,9 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://hw8du647wlpi"]
+[gd_scene load_steps=8 format=3 uid="uid://hw8du647wlpi"]
 
 [ext_resource type="Script" uid="uid://dyx8bh3pjmm1u" path="res://selectors.gd" id="1_1bvp3"]
 [ext_resource type="Script" uid="uid://cvjvscs8va6h2" path="res://controller.gd" id="2_7mycd"]
-[ext_resource type="PackedScene" uid="uid://ce1pl6oxnmy88" path="res://DTPanopticViewer.tscn" id="3_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://bhrmqeky1ipix" path="res://GTPanopticViewer.tscn" id="3_h2yge"]
+[ext_resource type="PackedScene" uid="uid://bhrmqeky1ipix" path="res://PanopticViewer.tscn" id="3_h2yge"]
 
 [sub_resource type="InputEventKey" id="InputEventKey_7mycd"]
 device = -1
@@ -86,7 +85,7 @@ size_flags_vertical = 3
 script = ExtResource("2_7mycd")
 gt_view_path = NodePath("Ground Truths")
 label_node = NodePath("Ground Truths/BottomPanel/Label")
-dt_view_scene = ExtResource("3_1bvp3")
+dt_view_scene = ExtResource("3_h2yge")
 
 [node name="Ground Truths" parent="VBoxContainer/ViewController" instance=ExtResource("3_h2yge")]
 layout_mode = 2

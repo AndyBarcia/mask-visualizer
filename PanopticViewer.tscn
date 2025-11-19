@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://bhrmqeky1ipix"]
 
-[ext_resource type="Script" uid="uid://did7ynyv7dj6j" path="res://gt_panoptic_viewer.gd" id="1_b7sh5"]
+[ext_resource type="Script" uid="uid://did7ynyv7dj6j" path="res://PanopticViewer.gd" id="1_b7sh5"]
 [ext_resource type="Shader" uid="uid://f2s5fstgtil4" path="res://mask.gdshader" id="1_mk64h"]
 [ext_resource type="Texture2D" uid="uid://dsyl5v0xnxvst" path="res://trained_logits_dice_py.png" id="2_ms8i6"]
 [ext_resource type="Script" uid="uid://c37mj6sx4doqw" path="res://PanopticRect.gd" id="3_lm58f"]

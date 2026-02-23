@@ -83,6 +83,17 @@ file_mode = 2
 access = 2
 use_native_dialog = true
 
+[node name="Export" type="Button" parent="PanelContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "Export PNG"
+
+[node name="FileDialog" type="FileDialog" parent="PanelContainer/MarginContainer/HBoxContainer/Export"]
+title = "Export current view as PNG"
+file_mode = 4
+access = 2
+filters = PackedStringArray("*.png ; PNG Image")
+use_native_dialog = true
+
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -96,3 +107,5 @@ text_direction = 2
 [connection signal="segment_clicked" from="Image" to="." method="_on_segment_clicked"]
 [connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Load" to="PanelContainer/MarginContainer/HBoxContainer/Load/FileDialog" method="set_visible" binds= [true]]
 [connection signal="dir_selected" from="PanelContainer/MarginContainer/HBoxContainer/Load/FileDialog" to="." method="_on_folder_selected"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/HBoxContainer/Export" to="." method="_on_export_pressed"]
+[connection signal="file_selected" from="PanelContainer/MarginContainer/HBoxContainer/Export/FileDialog" to="." method="_on_export_file_selected"]

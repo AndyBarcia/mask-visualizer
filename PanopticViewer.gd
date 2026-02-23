@@ -64,3 +64,49 @@ func set_panzoom_like(other) -> void:
 func _on_folder_selected(folder: String):
 	emit_signal("on_folder_selected", folder)
 	$PanelContainer/MarginContainer/HBoxContainer/Label.text = folder
+
+func _on_export_pressed() -> void:
+	$PanelContainer/MarginContainer/HBoxContainer/Export/FileDialog.popup_centered_ratio(0.6)
+
+func _on_export_file_selected(path: String) -> void:
+	var target_path := path
+	if not target_path.to_lower().ends_with(".png"):
+		target_path += ".png"
+
+	var image_control: Control = $Image
+	if not is_instance_valid(image_control):
+		push_error("Unable to export view: image control is missing")
+		return
+
+	var viewport_texture := get_viewport().get_texture()
+	if viewport_texture == null:
+		push_error("Unable to export view: viewport texture is unavailable")
+		return
+
+	var full_frame := viewport_texture.get_image()
+	if full_frame == null:
+		push_error("Unable to export view: viewport image is unavailable")
+		return
+
+	var global_rect := image_control.get_global_rect()
+	var crop_rect := Rect2i(
+		int(round(global_rect.position.x)),
+		int(round(global_rect.position.y)),
+		int(round(global_rect.size.x)),
+		int(round(global_rect.size.y))
+	)
+
+	if crop_rect.size.x <= 0 or crop_rect.size.y <= 0:
+		push_error("Unable to export view: image control has an invalid size")
+		return
+
+	var frame_bounds := Rect2i(Vector2i.ZERO, full_frame.get_size())
+	var clipped_rect := crop_rect.intersection(frame_bounds)
+	if clipped_rect.size.x <= 0 or clipped_rect.size.y <= 0:
+		push_error("Unable to export view: image control is outside of viewport")
+		return
+
+	var output := full_frame.get_region(clipped_rect)
+	var err := output.save_png(target_path)
+	if err != OK:
+		push_error("Unable to export PNG: %s" % target_path)

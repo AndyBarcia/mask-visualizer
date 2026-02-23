@@ -1,6 +1,6 @@
 extends ZoomPanRect
 
-signal segment_clicked(segment_id: int, append_selection: bool)
+signal segment_clicked(segment_id: int, append_selection: bool, remove_selection: bool)
 
 func _ready() -> void:
 	super()
@@ -10,7 +10,7 @@ func _gui_input(event: InputEvent) -> void:
 	# Add picking on left click
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_pick_mask(event.position, event.shift_pressed)
+			_pick_mask(event.position, event.shift_pressed, event.ctrl_pressed)
 	# Let parent handle zoom/pan
 	super._gui_input(event)
 
@@ -30,7 +30,7 @@ func set_selected_ids(ids: Array[int]) -> void:
 		mat.set_shader_parameter("selected_count", ids.size())
 		mat.set_shader_parameter("selected_ids", shader_ids)
 
-func _pick_mask(screen_pos: Vector2, append_selection: bool) -> void:
+func _pick_mask(screen_pos: Vector2, append_selection: bool, remove_selection: bool) -> void:
 	if reference_image == null:
 		return
 
@@ -52,10 +52,10 @@ func _pick_mask(screen_pos: Vector2, append_selection: bool) -> void:
 	var id: int = r + g * 256 + b * 256 * 256
 	
 	if id == 0:
-		emit_signal("segment_clicked", -1, append_selection)
+		emit_signal("segment_clicked", -1, append_selection, remove_selection)
 		return
 
-	emit_signal("segment_clicked", id, append_selection)
+	emit_signal("segment_clicked", id, append_selection, remove_selection)
 
 func update_shader_image(image, panoptic_image) -> void:
 	var tex := ImageTexture.create_from_image(image)

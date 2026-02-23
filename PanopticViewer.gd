@@ -1,7 +1,7 @@
 extends VBoxContainer
 class_name GTPanopticViewer
 
-signal segment_clicked(segment_id: int, append_selection: bool)
+signal segment_clicked(segment_id: int, append_selection: bool, remove_selection: bool)
 signal panzoom_sync(pan: Vector2, zoom: float)
 signal on_folder_selected(folder: String)
 
@@ -42,8 +42,8 @@ func set_selected_segments(segment_ids: Array[int], iou_by_segment: Dictionary =
 
 	$Image.set_selected_ids(segment_ids)
 
-func _on_segment_clicked(segment_id: int, append_selection: bool) -> void:
-	emit_signal("segment_clicked", segment_id, append_selection)
+func _on_segment_clicked(segment_id: int, append_selection: bool, remove_selection: bool) -> void:
+	emit_signal("segment_clicked", segment_id, append_selection, remove_selection)
 
 func _on_panzoom_sync(pan: Vector2, zoom: float) -> void:
 	emit_signal("panzoom_sync", pan, zoom)

@@ -86,24 +86,24 @@ text = "Show bounding boxes"
 
 [node name="OverlayAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
-text = "Overlay α"
+text = "Overlay"
 
 [node name="OverlayAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-min_value = 0.0
+size_flags_vertical = 4
 max_value = 1.0
 step = 0.01
 value = 0.4
 
 [node name="HighlightAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
-text = "Highlight α"
+text = "Highlight"
 
 [node name="HighlightAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-min_value = 0.0
+size_flags_vertical = 4
 max_value = 1.0
 step = 0.01
 value = 0.85
@@ -126,12 +126,11 @@ layout_mode = 2
 [connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/PrevButton" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_previous_image"]
 [connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/NextButton" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_next_image"]
 [connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/CheckBox" to="VBoxContainer/ViewController" method="set_view_sync"]
+[connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/BoundingBoxesCheckBox" to="VBoxContainer/ViewController" method="set_show_bounding_boxes"]
+[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/OverlayAlphaSlider" to="VBoxContainer/ViewController" method="set_overlay_alpha"]
+[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/HighlightAlphaSlider" to="VBoxContainer/ViewController" method="set_highlight_alpha"]
 [connection signal="on_dataset_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_dataset_folder_selected"]
 [connection signal="on_detections_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_detections_folder_selected"]
 [connection signal="on_folder_selected" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_dataset_folder_selected"]
 [connection signal="panzoom_sync" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_panzoom_sync"]
 [connection signal="segment_clicked" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_segment_clicked" binds= ["gt", -1]]
-
-[connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/BoundingBoxesCheckBox" to="VBoxContainer/ViewController" method="set_show_bounding_boxes"]
-[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/OverlayAlphaSlider" to="VBoxContainer/ViewController" method="set_overlay_alpha"]
-[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/HighlightAlphaSlider" to="VBoxContainer/ViewController" method="set_highlight_alpha"]

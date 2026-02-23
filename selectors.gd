@@ -87,7 +87,7 @@ func _dataset_folder_selected(dir: String) -> void:
 					continue
 				if not seg.has("id") or not seg.has("category_id"):
 					continue
-
+				
 				var seg_id: int = int(seg["id"])
 				var cat_id: int = int(seg["category_id"])
 
@@ -163,7 +163,6 @@ func _detections_folder_selected(dir: String, view: int) -> void:
 				continue
 			if not seg.has("id") or not seg.has("category_id"):
 				continue
-
 			var seg_id: int = int(seg["id"])
 			var cat_id: int = int(seg["category_id"])
 

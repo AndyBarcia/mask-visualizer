@@ -2,8 +2,6 @@ extends ZoomPanRect
 
 signal segment_clicked(segment_id: int, append_selection: bool, remove_selection: bool)
 
-const BBOX_LINE_WIDTH := 2.0
-
 var selected_ids: Array[int] = []
 var segment_bounds_uv: Dictionary = {}
 var bbox_overlay: BoundingBoxOverlay
@@ -33,7 +31,8 @@ func set_selected_id(id: int) -> void:
 
 func set_selected_ids(ids: Array[int]) -> void:
 	selected_ids = ids.duplicate()
-	_update_overlay_rects()
+	if bbox_overlay != null:
+		bbox_overlay.set_selected_ids(selected_ids)
 
 	var shader_ids := PackedFloat32Array()
 	for id in ids:
@@ -82,7 +81,8 @@ func update_shader_image(image, panoptic_image) -> void:
 
 	# Use the panoptic image for UV calculations
 	set_reference_image(panoptic_image)
-	segment_bounds_uv = _compute_segment_bounds_uv(panoptic_image)
+	segment_bounds_uv = bbox_overlay.compute_segment_bounds_uv(panoptic_image)
+	bbox_overlay.set_segment_bounds_uv(segment_bounds_uv)
 
 	_update_shader_control_size()
 	_update_shader_zoompan()
@@ -90,90 +90,13 @@ func update_shader_image(image, panoptic_image) -> void:
 
 func _update_shader_control_size() -> void:
 	super._update_shader_control_size()
-	_update_overlay_rects()
+	_update_overlay_view()
 
 func _update_shader_zoompan() -> void:
 	super._update_shader_zoompan()
-	_update_overlay_rects()
+	_update_overlay_view()
 
-func _update_overlay_rects() -> void:
+func _update_overlay_view() -> void:
 	if bbox_overlay == null:
 		return
-
-	var rects: Array[Rect2] = []
-	if reference_image == null or selected_ids.is_empty():
-		bbox_overlay.set_rects(rects, BBOX_LINE_WIDTH)
-		return
-
-	for id in selected_ids:
-		if not segment_bounds_uv.has(id):
-			continue
-
-		var uv_rect: Rect2 = segment_bounds_uv[id]
-		var min_screen := _tex_to_screen_with_letterbox(uv_rect.position)
-		var max_screen := _tex_to_screen_with_letterbox(uv_rect.end)
-		rects.append(Rect2(min_screen, max_screen - min_screen).abs())
-
-	bbox_overlay.set_rects(rects, BBOX_LINE_WIDTH)
-
-func _compute_segment_bounds_uv(panoptic_image: Image) -> Dictionary:
-	var bounds_px: Dictionary = {}
-	var image_size := panoptic_image.get_size()
-	var width := image_size.x
-	var height := image_size.y
-
-	for y in range(height):
-		for x in range(width):
-			var col: Color = panoptic_image.get_pixel(x, y)
-			var r: int = int(round(col.r * 255.0))
-			var g: int = int(round(col.g * 255.0))
-			var b: int = int(round(col.b * 255.0))
-			var id: int = r + g * 256 + b * 256 * 256
-			if id == 0:
-				continue
-
-			if not bounds_px.has(id):
-				bounds_px[id] = Rect2i(x, y, 1, 1)
-				continue
-
-			var rect: Rect2i = bounds_px[id]
-			var left := min(rect.position.x, x)
-			var top := min(rect.position.y, y)
-			var right := max(rect.end.x - 1, x)
-			var bottom := max(rect.end.y - 1, y)
-			bounds_px[id] = Rect2i(left, top, right - left + 1, bottom - top + 1)
-
-	var bounds_uv: Dictionary = {}
-	for id in bounds_px.keys():
-		var rect_px: Rect2i = bounds_px[id]
-		var min_uv := Vector2(
-			float(rect_px.position.x) / float(width),
-			float(rect_px.position.y) / float(height)
-		)
-		var max_uv := Vector2(
-			float(rect_px.end.x) / float(width),
-			float(rect_px.end.y) / float(height)
-		)
-		bounds_uv[id] = Rect2(min_uv, max_uv - min_uv)
-
-	return bounds_uv
-
-func _tex_to_screen_with_letterbox(tex_uv: Vector2) -> Vector2:
-	if reference_image == null:
-		return Vector2.ZERO
-
-	var r_uv: Vector2 = (tex_uv - pan) * zoom + Vector2(0.5, 0.5)
-	var tex_aspect: float = float(reference_image.get_size().x) / float(reference_image.get_size().y)
-	var ctrl_aspect: float = size.x / size.y
-
-	var uv: Vector2
-	if tex_aspect <= ctrl_aspect:
-		var width_frac: float = tex_aspect / ctrl_aspect
-		var left: float = 0.5 - width_frac * 0.5
-		uv = Vector2(left + r_uv.x * width_frac, r_uv.y)
-	else:
-		var height_frac: float = ctrl_aspect / tex_aspect
-		var top: float = 0.5 - height_frac * 0.5
-		uv = Vector2(r_uv.x, top + r_uv.y * height_frac)
-
-	return uv * size
+	bbox_overlay.set_view(reference_image, pan, zoom)

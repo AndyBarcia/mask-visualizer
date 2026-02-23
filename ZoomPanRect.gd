@@ -34,12 +34,14 @@ func _update_shader_control_size() -> void:
 	var mat := material
 	if mat is ShaderMaterial:
 		mat.set_shader_parameter("control_size", size)
+	queue_redraw()
 
 func _update_shader_zoompan() -> void:
 	var mat := material
 	if mat is ShaderMaterial:
 		mat.set_shader_parameter("zoom", zoom)
 		mat.set_shader_parameter("pan", pan)
+	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:
 	var changed = false

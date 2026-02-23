@@ -73,7 +73,7 @@ func _on_export_file_selected(path: String) -> void:
 	if not target_path.to_lower().ends_with(".png"):
 		target_path += ".png"
 
-	var image_control: Control = $Image
+	var image_control: ZoomPanRect = $Image
 	if not is_instance_valid(image_control):
 		push_error("Unable to export view: image control is missing")
 		return
@@ -88,16 +88,9 @@ func _on_export_file_selected(path: String) -> void:
 		push_error("Unable to export view: viewport image is unavailable")
 		return
 
-	var global_rect := image_control.get_global_rect()
-	var crop_rect := Rect2i(
-		int(round(global_rect.position.x)),
-		int(round(global_rect.position.y)),
-		int(round(global_rect.size.x)),
-		int(round(global_rect.size.y))
-	)
-
+	var crop_rect := _get_visible_shader_rect_in_viewport(image_control)
 	if crop_rect.size.x <= 0 or crop_rect.size.y <= 0:
-		push_error("Unable to export view: image control has an invalid size")
+		push_error("Unable to export view: image control has an invalid visible size")
 		return
 
 	var frame_bounds := Rect2i(Vector2i.ZERO, full_frame.get_size())
@@ -110,3 +103,47 @@ func _on_export_file_selected(path: String) -> void:
 	var err := output.save_png(target_path)
 	if err != OK:
 		push_error("Unable to export PNG: %s" % target_path)
+
+func _get_visible_shader_rect_in_viewport(image_control: ZoomPanRect) -> Rect2i:
+	var global_rect := image_control.get_global_rect()
+	if image_control.reference_image == null:
+		return Rect2i(
+			int(round(global_rect.position.x)),
+			int(round(global_rect.position.y)),
+			int(round(global_rect.size.x)),
+			int(round(global_rect.size.y))
+		)
+
+	var control_size := global_rect.size
+	if control_size.x <= 0.0 or control_size.y <= 0.0:
+		return Rect2i()
+
+	var image_size := image_control.reference_image.get_size()
+	if image_size.x <= 0 or image_size.y <= 0:
+		return Rect2i(
+			int(round(global_rect.position.x)),
+			int(round(global_rect.position.y)),
+			int(round(global_rect.size.x)),
+			int(round(global_rect.size.y))
+		)
+
+	var tex_aspect: float = float(image_size.x) / float(image_size.y)
+	var ctrl_aspect: float = control_size.x / control_size.y
+
+	var visible_pos := global_rect.position
+	var visible_size := control_size
+	if tex_aspect <= ctrl_aspect:
+		var width_frac: float = tex_aspect / ctrl_aspect
+		visible_size.x = control_size.x * width_frac
+		visible_pos.x += (control_size.x - visible_size.x) * 0.5
+	else:
+		var height_frac: float = ctrl_aspect / tex_aspect
+		visible_size.y = control_size.y * height_frac
+		visible_pos.y += (control_size.y - visible_size.y) * 0.5
+
+	return Rect2i(
+		int(round(visible_pos.x)),
+		int(round(visible_pos.y)),
+		int(round(visible_size.x)),
+		int(round(visible_size.y))
+	)

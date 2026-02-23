@@ -15,6 +15,10 @@ var iou_cache = PanopticIoUCache.new()
 var gt_categories: Dictionary = {}                # GT segment_id -> category_name
 var dt_categories_list: Array = []                # Array[Dictionary] per view (pred segment_id -> category_name)
 
+# Current multi-selection state
+var gt_selected_ids: Array[int] = []
+var dt_selected_ids: Array = []                   # Array[Array[int]] per view
+
 func _ready() -> void:
 	gt_view = get_node(gt_view_path)
 
@@ -34,7 +38,8 @@ func set_num_views(num_views: int) -> void:
 				remove_child(v)
 				v.queue_free()
 			dt_views.remove_at(i)
-		return 
+		_sync_selection_buffers()
+		return
 
 	# Grow: add new views after the existing ones
 	for i in range(current, num_views):
@@ -46,6 +51,8 @@ func set_num_views(num_views: int) -> void:
 		dt_instance.segment_clicked.connect(_on_segment_clicked.bind("dt", i))
 		dt_instance.panzoom_sync.connect(_on_panzoom_sync)
 		dt_instance.on_folder_selected.connect(_on_detections_folder_selected.bind(i))
+
+	_sync_selection_buffers()
 
 # Called from the image_selected signal:
 func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Image], det_segments_array) -> void:
@@ -72,37 +79,104 @@ func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Ima
 			det_segments_array[i],
 		)
 
-func _on_segment_clicked(seg_id: int, kind: String, dt_view_idx: int) -> void:
-	# If background was selected, just clear the selection of all viewers.
+	_clear_all_selections()
+
+func _on_segment_clicked(seg_id: int, append_selection: bool, kind: String, dt_view_idx: int) -> void:
 	if seg_id == -1:
-		gt_view.set_selected_segment(-1, 0.0)
-		for v in dt_views:
-			v.set_selected_segment(-1, 0.0)
+		if not append_selection:
+			_clear_all_selections()
 		return
 
-	if kind == "gt":
-		gt_view.set_selected_segment(seg_id, 0.0)
-		for i in range(dt_views.size()):
-			var det_match = iou_cache.get_best_match(0, i+1, seg_id)
-			if not det_match.is_empty() and det_match["iou"] > 0.3:
-				dt_views[i].set_selected_segment(det_match["target_id"], det_match["iou"])
-			else:
-				dt_views[i].set_selected_segment(-1, 0.0)
+	var click_selection := _selection_from_click(seg_id, kind, dt_view_idx)
+	if append_selection:
+		_apply_click_selection(click_selection, true)
 	else:
-		dt_views[dt_view_idx].set_selected_segment(seg_id, 0.0)
-		var gt_match = iou_cache.get_best_match(dt_view_idx+1, 0, seg_id)
+		_apply_click_selection(click_selection, false)
+
+func _selection_from_click(seg_id: int, kind: String, dt_view_idx: int) -> Dictionary:
+	var gt_ids: Array[int] = []
+	var dt_ids: Array = []
+	for _i in range(dt_views.size()):
+		dt_ids.append([])
+
+	var gt_iou: Dictionary = {}
+	var dt_iou: Array = []
+	for _j in range(dt_views.size()):
+		dt_iou.append({})
+
+	if kind == "gt":
+		gt_ids.append(seg_id)
+		for i in range(dt_views.size()):
+			var det_match = iou_cache.get_best_match(0, i + 1, seg_id)
+			if not det_match.is_empty() and det_match["iou"] > 0.3:
+				var matched_id := int(det_match["target_id"])
+				dt_ids[i].append(matched_id)
+				dt_iou[i][matched_id] = det_match["iou"]
+	else:
+		dt_ids[dt_view_idx].append(seg_id)
+		var gt_match = iou_cache.get_best_match(dt_view_idx + 1, 0, seg_id)
 		if not gt_match.is_empty() and gt_match["iou"] > 0.3:
-			gt_view.set_selected_segment(gt_match["target_id"], gt_match["iou"])
-		else:
-			gt_view.set_selected_segment(-1, 0.0)
+			var matched_gt_id := int(gt_match["target_id"])
+			gt_ids.append(matched_gt_id)
+			gt_iou[matched_gt_id] = gt_match["iou"]
 		for i in range(dt_views.size()):
 			if i == dt_view_idx:
 				continue
-			var det_match = iou_cache.get_best_match(dt_view_idx+1, i+1, seg_id)
+			var det_match = iou_cache.get_best_match(dt_view_idx + 1, i + 1, seg_id)
 			if not det_match.is_empty() and det_match["iou"] > 0.3:
-				dt_views[i].set_selected_segment(det_match["target_id"], det_match["iou"])
-			else:
-				dt_views[i].set_selected_segment(-1, 0.0)
+				var matched_dt_id := int(det_match["target_id"])
+				dt_ids[i].append(matched_dt_id)
+				dt_iou[i][matched_dt_id] = det_match["iou"]
+
+	return {
+		"gt_ids": gt_ids,
+		"dt_ids": dt_ids,
+		"gt_iou": gt_iou,
+		"dt_iou": dt_iou,
+	}
+
+func _apply_click_selection(click_selection: Dictionary, append_selection: bool) -> void:
+	var next_gt_ids: Array[int] = click_selection["gt_ids"]
+	var next_dt_ids: Array = click_selection["dt_ids"]
+
+	if append_selection:
+		gt_selected_ids = _unique_ints(gt_selected_ids + next_gt_ids)
+		for i in range(dt_selected_ids.size()):
+			dt_selected_ids[i] = _unique_ints(dt_selected_ids[i] + next_dt_ids[i])
+	else:
+		gt_selected_ids = _unique_ints(next_gt_ids)
+		for i in range(dt_selected_ids.size()):
+			dt_selected_ids[i] = _unique_ints(next_dt_ids[i])
+
+	gt_view.set_selected_segments(gt_selected_ids, click_selection["gt_iou"])
+	for i in range(dt_views.size()):
+		dt_views[i].set_selected_segments(dt_selected_ids[i], click_selection["dt_iou"][i])
+
+func _clear_all_selections() -> void:
+	gt_selected_ids.clear()
+	for i in range(dt_selected_ids.size()):
+		dt_selected_ids[i].clear()
+
+	gt_view.set_selected_segments([])
+	for v in dt_views:
+		v.set_selected_segments([])
+
+func _sync_selection_buffers() -> void:
+	dt_selected_ids.resize(dt_views.size())
+	for i in range(dt_selected_ids.size()):
+		if typeof(dt_selected_ids[i]) != TYPE_ARRAY:
+			dt_selected_ids[i] = []
+
+func _unique_ints(values: Array) -> Array[int]:
+	var seen: Dictionary = {}
+	var out: Array[int] = []
+	for value in values:
+		var id := int(value)
+		if seen.has(id):
+			continue
+		seen[id] = true
+		out.append(id)
+	return out
 
 func set_view_sync(sync_view: bool) -> void:
 	# Start everyone from the GT view's current pan/zoom

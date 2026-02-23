@@ -1,7 +1,7 @@
 extends VBoxContainer
 class_name GTPanopticViewer
 
-signal segment_clicked(segment_id: int)
+signal segment_clicked(segment_id: int, append_selection: bool)
 signal panzoom_sync(pan: Vector2, zoom: float)
 signal on_folder_selected(folder: String)
 
@@ -13,23 +13,36 @@ func set_panoptic_image(image, panoptic_image, segments) -> void:
 
 func set_selected_segment(segment_id: int, iou: float) -> void:
 	if segment_id == -1:
-		$NameContainer/MarginContainer/Label.text = "No mask selected"
-		$Image.set_selected_id(segment_id)
+		set_selected_segments([])
 		return
-	
+	set_selected_segments([segment_id], {segment_id: iou})
+
+func set_selected_segments(segment_ids: Array[int], iou_by_segment: Dictionary = {}) -> void:
+	if segment_ids.is_empty():
+		$NameContainer/MarginContainer/Label.text = "No mask selected"
+		$Image.set_selected_ids([])
+		return
+
+	if segment_ids.size() > 1:
+		$NameContainer/MarginContainer/Label.text = "%d masks selected" % segment_ids.size()
+		$Image.set_selected_ids(segment_ids)
+		return
+
+	var segment_id := segment_ids[0]
 	var gt_cat := "Unknown"
 	if current_segments.has(segment_id):
 		gt_cat = str(current_segments[segment_id]).capitalize()
-	
+
+	var iou := float(iou_by_segment.get(segment_id, 0.0))
 	if iou != 0.0:
-		$NameContainer/MarginContainer/Label.text = "%s (matched with IoU %.2f%%)" % [gt_cat, iou*100]
+		$NameContainer/MarginContainer/Label.text = "%s (matched with IoU %.2f%%)" % [gt_cat, iou * 100.0]
 	else:
 		$NameContainer/MarginContainer/Label.text = gt_cat
-	$Image.set_selected_id(segment_id)
-	
-func _on_segment_clicked(segment_id: int) -> void:
-	emit_signal("segment_clicked", segment_id)
-	set_selected_segment(segment_id, 0.0)
+
+	$Image.set_selected_ids(segment_ids)
+
+func _on_segment_clicked(segment_id: int, append_selection: bool) -> void:
+	emit_signal("segment_clicked", segment_id, append_selection)
 
 func _on_panzoom_sync(pan: Vector2, zoom: float) -> void:
 	emit_signal("panzoom_sync", pan, zoom)

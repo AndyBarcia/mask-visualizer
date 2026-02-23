@@ -17,8 +17,18 @@ uniform vec4 bar_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float overlay_alpha : hint_range(0.0, 1.0) = 0.4;
 uniform float highlight_alpha : hint_range(0.0, 1.0) = 0.85;
 
-// Selected instance ID (-1 = none)
-uniform float selected_id = -1.0;
+// Selected instance IDs (supports multi-select).
+uniform int selected_count = 0;
+uniform float selected_ids[64];
+
+bool is_selected(float id) {
+	for (int i = 0; i < selected_count; i++) {
+		if (abs(id - selected_ids[i]) < 0.5) {
+			return true;
+		}
+	}
+	return false;
+}
 
 float decode_id(vec3 rgb) {
 	// Convert 0–1 RGB to 0–255 and pack into a 24-bit integer.
@@ -71,7 +81,7 @@ void fragment() {
 	float a = 0.0;
 	if (has_label) {
 		a = overlay_alpha;
-		if (selected_id >= 0.0 && abs(id - selected_id) < 0.5) {
+		if (is_selected(id)) {
 			a = highlight_alpha;
 		}
 	}

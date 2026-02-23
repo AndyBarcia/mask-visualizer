@@ -11,6 +11,8 @@ var segment_bounds_uv: Dictionary = {}
 var reference_image: Image
 var pan: Vector2 = Vector2(0.5, 0.5)
 var zoom: float = 1.0
+var _bounds_image: Image
+var _bbox_cache := PanopticBBoxCache.new()
 
 func set_selected_ids(ids: Array[int]) -> void:
 	selected_ids = ids.duplicate()
@@ -20,54 +22,20 @@ func set_view(image: Image, next_pan: Vector2, next_zoom: float) -> void:
 	reference_image = image
 	pan = next_pan
 	zoom = next_zoom
-	_update_segment_bounds_uv()
+	_update_segment_bounds_uv_if_needed()
 	_refresh_rects()
 
-func _update_segment_bounds_uv():
+func _update_segment_bounds_uv_if_needed() -> void:
 	if reference_image == null:
+		_bounds_image = null
 		segment_bounds_uv = {}
 		return
-	
-	var bounds_px: Dictionary = {}
-	var image_size := reference_image.get_size()
-	var width := image_size.x
-	var height := image_size.y
 
-	for y in range(height):
-		for x in range(width):
-			var col: Color = reference_image.get_pixel(x, y)
-			var r: int = int(round(col.r * 255.0))
-			var g: int = int(round(col.g * 255.0))
-			var b: int = int(round(col.b * 255.0))
-			var id: int = r + g * 256 + b * 256 * 256
-			if id == 0:
-				continue
+	if _bounds_image == reference_image:
+		return
 
-			if not bounds_px.has(id):
-				bounds_px[id] = Rect2i(x, y, 1, 1)
-				continue
-
-			var rect: Rect2i = bounds_px[id]
-			var left : int = min(rect.position.x, x)
-			var top : int = min(rect.position.y, y)
-			var right : int = max(rect.end.x - 1, x)
-			var bottom : int = max(rect.end.y - 1, y)
-			bounds_px[id] = Rect2i(left, top, right - left + 1, bottom - top + 1)
-
-	var bounds_uv: Dictionary = {}
-	for id in bounds_px.keys():
-		var rect_px: Rect2i = bounds_px[id]
-		var min_uv := Vector2(
-			float(rect_px.position.x) / float(width),
-			float(rect_px.position.y) / float(height)
-		)
-		var max_uv := Vector2(
-			float(rect_px.end.x) / float(width),
-			float(rect_px.end.y) / float(height)
-		)
-		bounds_uv[id] = Rect2(min_uv, max_uv - min_uv)
-	
-	segment_bounds_uv = bounds_uv
+	segment_bounds_uv = _bbox_cache.compute_bounds_uv(reference_image)
+	_bounds_image = reference_image
 
 func _refresh_rects() -> void:
 	var next_rects: Array[Rect2] = []

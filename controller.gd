@@ -63,11 +63,14 @@ func set_num_views(num_views: int) -> void:
 
 # Called from the image_selected signal:
 func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Image], det_segments_array) -> void:
+	var normalized_det_images := _normalize_det_images(det_images)
+	var normalized_det_segments := _normalize_det_segments(det_segments_array)
+
 	# Store categories
 	gt_categories = gt_segments
-	dt_categories_list = det_segments_array
+	dt_categories_list = normalized_det_segments
 
-	var all_images := det_images.duplicate()
+	var all_images := normalized_det_images.duplicate()
 	all_images.insert(0, gt_img)
 	iou_cache.bake_all_maps(all_images)
 
@@ -82,11 +85,36 @@ func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Ima
 	for i in range(dt_views.size()):
 		dt_views[i].set_panoptic_image(
 			base_img,
-			det_images[i],
-			det_segments_array[i],
+			normalized_det_images[i],
+			normalized_det_segments[i],
 		)
 
 	_clear_all_selections()
+
+func _normalize_det_images(det_images: Array[Image]) -> Array[Image]:
+	var out: Array[Image] = []
+	out.resize(dt_views.size())
+
+	for i in range(dt_views.size()):
+		out[i] = det_images[i] if i < det_images.size() else null
+
+	if det_images.size() != dt_views.size():
+		push_warning("Detection image count (%d) does not match current DT views (%d). Missing slots will be empty." % [det_images.size(), dt_views.size()])
+
+	return out
+
+func _normalize_det_segments(det_segments_array: Array) -> Array:
+	var out: Array = []
+	out.resize(dt_views.size())
+
+	for i in range(dt_views.size()):
+		var slot_segments = det_segments_array[i] if i < det_segments_array.size() else {}
+		out[i] = slot_segments if typeof(slot_segments) == TYPE_DICTIONARY else {}
+
+	if det_segments_array.size() != dt_views.size():
+		push_warning("Detection segment map count (%d) does not match current DT views (%d). Missing slots will be empty." % [det_segments_array.size(), dt_views.size()])
+
+	return out
 
 func _on_segment_clicked(seg_id: int, append_selection: bool, remove_selection: bool, kind: String, dt_view_idx: int) -> void:
 	if seg_id == -1:

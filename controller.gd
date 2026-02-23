@@ -81,14 +81,16 @@ func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Ima
 
 	_clear_all_selections()
 
-func _on_segment_clicked(seg_id: int, append_selection: bool, kind: String, dt_view_idx: int) -> void:
+func _on_segment_clicked(seg_id: int, append_selection: bool, remove_selection: bool, kind: String, dt_view_idx: int) -> void:
 	if seg_id == -1:
-		if not append_selection:
+		if not append_selection and not remove_selection:
 			_clear_all_selections()
 		return
 
 	var click_selection := _selection_from_click(seg_id, kind, dt_view_idx)
-	if append_selection:
+	if remove_selection:
+		_apply_click_selection(click_selection, false, true)
+	elif append_selection:
 		_apply_click_selection(click_selection, true)
 	else:
 		_apply_click_selection(click_selection, false)
@@ -135,11 +137,15 @@ func _selection_from_click(seg_id: int, kind: String, dt_view_idx: int) -> Dicti
 		"dt_iou": dt_iou,
 	}
 
-func _apply_click_selection(click_selection: Dictionary, append_selection: bool) -> void:
+func _apply_click_selection(click_selection: Dictionary, append_selection: bool, remove_selection: bool = false) -> void:
 	var next_gt_ids: Array[int] = click_selection["gt_ids"]
 	var next_dt_ids: Array = click_selection["dt_ids"]
 
-	if append_selection:
+	if remove_selection:
+		gt_selected_ids = _subtract_ints(gt_selected_ids, next_gt_ids)
+		for i in range(dt_selected_ids.size()):
+			dt_selected_ids[i] = _subtract_ints(dt_selected_ids[i], next_dt_ids[i])
+	elif append_selection:
 		gt_selected_ids = _unique_ints(gt_selected_ids + next_gt_ids)
 		for i in range(dt_selected_ids.size()):
 			dt_selected_ids[i] = _unique_ints(dt_selected_ids[i] + next_dt_ids[i])
@@ -176,6 +182,20 @@ func _unique_ints(values: Array) -> Array[int]:
 		if seen.has(id):
 			continue
 		seen[id] = true
+		out.append(id)
+	return out
+
+
+func _subtract_ints(values: Array, values_to_remove: Array) -> Array[int]:
+	var to_remove: Dictionary = {}
+	for value in values_to_remove:
+		to_remove[int(value)] = true
+
+	var out: Array[int] = []
+	for value in values:
+		var id := int(value)
+		if to_remove.has(id):
+			continue
 		out.append(id)
 	return out
 

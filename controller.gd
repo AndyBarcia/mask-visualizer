@@ -156,10 +156,11 @@ func _clear_all_selections() -> void:
 	gt_selected_ids.clear()
 	for i in range(dt_selected_ids.size()):
 		dt_selected_ids[i].clear()
-
-	gt_view.set_selected_segments([])
+	
+	var empty_selection: Array[int] = []
+	gt_view.set_selected_segments(empty_selection)
 	for v in dt_views:
-		v.set_selected_segments([])
+		v.set_selected_segments(empty_selection)
 
 func _sync_selection_buffers() -> void:
 	dt_selected_ids.resize(dt_views.size())

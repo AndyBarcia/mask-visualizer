@@ -20,7 +20,8 @@ func set_selected_segment(segment_id: int, iou: float) -> void:
 func set_selected_segments(segment_ids: Array[int], iou_by_segment: Dictionary = {}) -> void:
 	if segment_ids.is_empty():
 		$NameContainer/MarginContainer/Label.text = "No mask selected"
-		$Image.set_selected_ids([])
+		var empty_selection: Array[int] = []
+		$Image.set_selected_ids(empty_selection)
 		return
 
 	if segment_ids.size() > 1:

@@ -79,6 +79,35 @@ layout_mode = 2
 button_pressed = true
 text = "Sync view"
 
+[node name="BoundingBoxesCheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+layout_mode = 2
+button_pressed = true
+text = "Show bounding boxes"
+
+[node name="OverlayAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+layout_mode = 2
+text = "Overlay α"
+
+[node name="OverlayAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 0.4
+
+[node name="HighlightAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+layout_mode = 2
+text = "Highlight α"
+
+[node name="HighlightAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 0.85
+
 [node name="ViewController" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -102,3 +131,7 @@ layout_mode = 2
 [connection signal="on_folder_selected" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_dataset_folder_selected"]
 [connection signal="panzoom_sync" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_panzoom_sync"]
 [connection signal="segment_clicked" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_segment_clicked" binds= ["gt", -1]]
+
+[connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/BoundingBoxesCheckBox" to="VBoxContainer/ViewController" method="set_show_bounding_boxes"]
+[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/OverlayAlphaSlider" to="VBoxContainer/ViewController" method="set_overlay_alpha"]
+[connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/HighlightAlphaSlider" to="VBoxContainer/ViewController" method="set_highlight_alpha"]

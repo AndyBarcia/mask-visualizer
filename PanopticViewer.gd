@@ -61,6 +61,15 @@ func set_panzoom_like(other) -> void:
 	$Image.zoom = other.get_child(1).zoom
 	$Image._update_shader_zoompan()
 
+func set_show_bounding_boxes(is_visible: bool) -> void:
+	$Image.set_bounding_boxes_visible(is_visible)
+
+func set_overlay_alpha(alpha: float) -> void:
+	$Image.set_overlay_alpha(alpha)
+
+func set_highlight_alpha(alpha: float) -> void:
+	$Image.set_highlight_alpha(alpha)
+
 func _on_folder_selected(folder: String):
 	emit_signal("on_folder_selected", folder)
 	$PanelContainer/MarginContainer/HBoxContainer/Label.text = folder

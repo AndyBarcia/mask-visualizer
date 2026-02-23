@@ -19,8 +19,13 @@ var dt_categories_list: Array = []                # Array[Dictionary] per view (
 var gt_selected_ids: Array[int] = []
 var dt_selected_ids: Array = []                   # Array[Array[int]] per view
 
+var show_bounding_boxes: bool = true
+var overlay_alpha: float = 0.4
+var highlight_alpha: float = 0.85
+
 func _ready() -> void:
 	gt_view = get_node(gt_view_path)
+	_apply_visual_settings(gt_view)
 
 func set_num_views(num_views: int) -> void:
 	num_views = max(num_views, 0)
@@ -46,6 +51,8 @@ func set_num_views(num_views: int) -> void:
 		var dt_instance = dt_view_scene.instantiate()
 		add_child(dt_instance)
 		dt_views.append(dt_instance)
+
+		_apply_visual_settings(dt_instance)
 
 		# Auto-connect signals for the new instance only.
 		dt_instance.segment_clicked.connect(_on_segment_clicked.bind("dt", i))
@@ -217,3 +224,28 @@ func _on_dataset_folder_selected(folder: String) -> void:
 
 func _on_detections_folder_selected(folder: String, view: int) -> void:
 	emit_signal("on_detections_folder_selected", folder, view)
+
+func set_show_bounding_boxes(is_visible: bool) -> void:
+	show_bounding_boxes = is_visible
+	_apply_visual_settings(gt_view)
+	for v in dt_views:
+		_apply_visual_settings(v)
+
+func set_overlay_alpha(alpha: float) -> void:
+	overlay_alpha = alpha
+	_apply_visual_settings(gt_view)
+	for v in dt_views:
+		_apply_visual_settings(v)
+
+func set_highlight_alpha(alpha: float) -> void:
+	highlight_alpha = alpha
+	_apply_visual_settings(gt_view)
+	for v in dt_views:
+		_apply_visual_settings(v)
+
+func _apply_visual_settings(view) -> void:
+	if not is_instance_valid(view):
+		return
+	view.set_show_bounding_boxes(show_bounding_boxes)
+	view.set_overlay_alpha(overlay_alpha)
+	view.set_highlight_alpha(highlight_alpha)

@@ -41,6 +41,19 @@ func set_selected_ids(ids: Array[int]) -> void:
 		mat.set_shader_parameter("selected_count", ids.size())
 		mat.set_shader_parameter("selected_ids", shader_ids)
 
+func set_bounding_boxes_visible(is_visible: bool) -> void:
+	$BoundingBoxOverlay.visible = is_visible
+
+func set_overlay_alpha(alpha: float) -> void:
+	var mat := material
+	if mat is ShaderMaterial:
+		mat.set_shader_parameter("overlay_alpha", alpha)
+
+func set_highlight_alpha(alpha: float) -> void:
+	var mat := material
+	if mat is ShaderMaterial:
+		mat.set_shader_parameter("highlight_alpha", alpha)
+
 func _pick_mask(screen_pos: Vector2, append_selection: bool, remove_selection: bool) -> void:
 	if reference_image == null:
 		return

@@ -16,25 +16,26 @@ func set_selected_ids(ids: Array[int]) -> void:
 	selected_ids = ids.duplicate()
 	_refresh_rects()
 
-func set_segment_bounds_uv(bounds_uv: Dictionary) -> void:
-	segment_bounds_uv = bounds_uv.duplicate(true)
-	_refresh_rects()
-
 func set_view(image: Image, next_pan: Vector2, next_zoom: float) -> void:
 	reference_image = image
 	pan = next_pan
 	zoom = next_zoom
+	_update_segment_bounds_uv()
 	_refresh_rects()
 
-func compute_segment_bounds_uv(panoptic_image: Image) -> Dictionary:
+func _update_segment_bounds_uv():
+	if reference_image == null:
+		segment_bounds_uv = {}
+		return
+	
 	var bounds_px: Dictionary = {}
-	var image_size := panoptic_image.get_size()
+	var image_size := reference_image.get_size()
 	var width := image_size.x
 	var height := image_size.y
 
 	for y in range(height):
 		for x in range(width):
-			var col: Color = panoptic_image.get_pixel(x, y)
+			var col: Color = reference_image.get_pixel(x, y)
 			var r: int = int(round(col.r * 255.0))
 			var g: int = int(round(col.g * 255.0))
 			var b: int = int(round(col.b * 255.0))
@@ -47,10 +48,10 @@ func compute_segment_bounds_uv(panoptic_image: Image) -> Dictionary:
 				continue
 
 			var rect: Rect2i = bounds_px[id]
-			var left := min(rect.position.x, x)
-			var top := min(rect.position.y, y)
-			var right := max(rect.end.x - 1, x)
-			var bottom := max(rect.end.y - 1, y)
+			var left : int = min(rect.position.x, x)
+			var top : int = min(rect.position.y, y)
+			var right : int = max(rect.end.x - 1, x)
+			var bottom : int = max(rect.end.y - 1, y)
 			bounds_px[id] = Rect2i(left, top, right - left + 1, bottom - top + 1)
 
 	var bounds_uv: Dictionary = {}
@@ -65,8 +66,8 @@ func compute_segment_bounds_uv(panoptic_image: Image) -> Dictionary:
 			float(rect_px.end.y) / float(height)
 		)
 		bounds_uv[id] = Rect2(min_uv, max_uv - min_uv)
-
-	return bounds_uv
+	
+	segment_bounds_uv = bounds_uv
 
 func _refresh_rects() -> void:
 	var next_rects: Array[Rect2] = []

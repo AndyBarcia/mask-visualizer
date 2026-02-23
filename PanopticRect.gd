@@ -2,14 +2,19 @@ extends ZoomPanRect
 
 signal segment_clicked(segment_id: int, append_selection: bool, remove_selection: bool)
 
-const BBOX_COLOR := Color(1.0, 1.0, 0.0, 1.0)
 const BBOX_LINE_WIDTH := 2.0
 
 var selected_ids: Array[int] = []
 var segment_bounds_uv: Dictionary = {}
+var bbox_overlay: BoundingBoxOverlay
 
 func _ready() -> void:
 	super()
+	bbox_overlay = BoundingBoxOverlay.new()
+	bbox_overlay.name = "BoundingBoxOverlay"
+	bbox_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bbox_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bbox_overlay)
 	set_selected_ids([])
 
 func _gui_input(event: InputEvent) -> void:
@@ -28,7 +33,7 @@ func set_selected_id(id: int) -> void:
 
 func set_selected_ids(ids: Array[int]) -> void:
 	selected_ids = ids.duplicate()
-	queue_redraw()
+	_update_overlay_rects()
 
 	var shader_ids := PackedFloat32Array()
 	for id in ids:
@@ -38,21 +43,6 @@ func set_selected_ids(ids: Array[int]) -> void:
 	if mat is ShaderMaterial:
 		mat.set_shader_parameter("selected_count", ids.size())
 		mat.set_shader_parameter("selected_ids", shader_ids)
-
-func _draw() -> void:
-	if selected_ids.is_empty() or reference_image == null:
-		return
-
-	for id in selected_ids:
-		if not segment_bounds_uv.has(id):
-			continue
-
-		var uv_rect: Rect2 = segment_bounds_uv[id]
-		var min_screen := _tex_to_screen_with_letterbox(uv_rect.position)
-		var max_screen := _tex_to_screen_with_letterbox(uv_rect.end)
-
-		var screen_rect := Rect2(min_screen, max_screen - min_screen).abs()
-		draw_rect(screen_rect, BBOX_COLOR, false, BBOX_LINE_WIDTH)
 
 func _pick_mask(screen_pos: Vector2, append_selection: bool, remove_selection: bool) -> void:
 	if reference_image == null:
@@ -97,6 +87,34 @@ func update_shader_image(image, panoptic_image) -> void:
 	_update_shader_control_size()
 	_update_shader_zoompan()
 	set_selected_ids([])
+
+func _update_shader_control_size() -> void:
+	super._update_shader_control_size()
+	_update_overlay_rects()
+
+func _update_shader_zoompan() -> void:
+	super._update_shader_zoompan()
+	_update_overlay_rects()
+
+func _update_overlay_rects() -> void:
+	if bbox_overlay == null:
+		return
+
+	var rects: Array[Rect2] = []
+	if reference_image == null or selected_ids.is_empty():
+		bbox_overlay.set_rects(rects, BBOX_LINE_WIDTH)
+		return
+
+	for id in selected_ids:
+		if not segment_bounds_uv.has(id):
+			continue
+
+		var uv_rect: Rect2 = segment_bounds_uv[id]
+		var min_screen := _tex_to_screen_with_letterbox(uv_rect.position)
+		var max_screen := _tex_to_screen_with_letterbox(uv_rect.end)
+		rects.append(Rect2(min_screen, max_screen - min_screen).abs())
+
+	bbox_overlay.set_rects(rects, BBOX_LINE_WIDTH)
 
 func _compute_segment_bounds_uv(panoptic_image: Image) -> Dictionary:
 	var bounds_px: Dictionary = {}

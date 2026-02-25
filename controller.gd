@@ -22,10 +22,12 @@ var dt_selected_ids: Array = []                   # Array[Array[int]] per view
 var show_bounding_boxes: bool = true
 var overlay_alpha: float = 0.4
 var highlight_alpha: float = 0.85
+var randomize_dense_instance_colors: bool = false
 
 func _ready() -> void:
 	gt_view = get_node(gt_view_path)
 	_apply_visual_settings(gt_view)
+	gt_view.set_randomize_dense_instance_colors(randomize_dense_instance_colors)
 
 func set_num_views(num_views: int) -> void:
 	num_views = max(num_views, 0)
@@ -53,6 +55,7 @@ func set_num_views(num_views: int) -> void:
 		dt_views.append(dt_instance)
 
 		_apply_visual_settings(dt_instance)
+		dt_instance.set_randomize_dense_instance_colors(randomize_dense_instance_colors)
 
 		# Auto-connect signals for the new instance only.
 		dt_instance.segment_clicked.connect(_on_segment_clicked.bind("dt", i))
@@ -77,6 +80,7 @@ func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Ima
 		gt_img,
 		gt_categories
 	)
+	gt_view.set_randomize_dense_instance_colors(randomize_dense_instance_colors)
 
 	# Update all DT views with their own detection info
 	for i in range(dt_views.size()):
@@ -85,6 +89,7 @@ func load_image_pair(base_img, gt_img: Image, gt_segments, det_images: Array[Ima
 			det_images[i],
 			det_segments_array[i],
 		)
+		dt_views[i].set_randomize_dense_instance_colors(randomize_dense_instance_colors)
 
 	_clear_all_selections()
 
@@ -242,6 +247,14 @@ func set_highlight_alpha(alpha: float) -> void:
 	_apply_visual_settings(gt_view)
 	for v in dt_views:
 		_apply_visual_settings(v)
+
+
+func set_randomize_dense_instance_colors(enabled: bool) -> void:
+	randomize_dense_instance_colors = enabled
+	if is_instance_valid(gt_view):
+		gt_view.set_randomize_dense_instance_colors(enabled)
+	for v in dt_views:
+		v.set_randomize_dense_instance_colors(enabled)
 
 func _apply_visual_settings(view) -> void:
 	if not is_instance_valid(view):

@@ -6,10 +6,67 @@ signal panzoom_sync(pan: Vector2, zoom: float)
 signal on_folder_selected(folder: String)
 
 var current_segments = []
+var current_base_image: Image = null
+var current_panoptic_image: Image = null
+var randomize_dense_instance_colors: bool = false
 
 func set_panoptic_image(image, panoptic_image, segments) -> void:
-	$Image.update_shader_image(image, panoptic_image)
+	current_base_image = image
+	current_panoptic_image = panoptic_image
 	current_segments = segments
+	_apply_panoptic_overlay()
+
+func set_randomize_dense_instance_colors(enabled: bool) -> void:
+	randomize_dense_instance_colors = enabled
+	_apply_panoptic_overlay()
+
+func _apply_panoptic_overlay() -> void:
+	if current_base_image == null or current_panoptic_image == null:
+		return
+
+	var overlay_image: Image = current_panoptic_image
+	if randomize_dense_instance_colors:
+		overlay_image = _build_randomized_overlay(current_panoptic_image, current_segments)
+
+	$Image.update_shader_image(current_base_image, current_panoptic_image, overlay_image)
+
+func _build_randomized_overlay(panoptic_image: Image, segments: Dictionary) -> Image:
+	var category_counts: Dictionary = {}
+	for seg_id in segments.keys():
+		var category_name := str(segments[seg_id])
+		category_counts[category_name] = int(category_counts.get(category_name, 0)) + 1
+
+	var randomized_colors: Dictionary = {}
+	for seg_id in segments.keys():
+		var category_name := str(segments[seg_id])
+		if int(category_counts.get(category_name, 0)) <= 2:
+			continue
+
+		var id := int(seg_id)
+		var rng := RandomNumberGenerator.new()
+		rng.seed = int(id)
+		var hue := rng.randf()
+		var sat := rng.randf_range(0.65, 0.95)
+		var val := rng.randf_range(0.8, 1.0)
+		randomized_colors[id] = Color.from_hsv(hue, sat, val)
+
+	if randomized_colors.is_empty():
+		return panoptic_image
+
+	var output := panoptic_image.duplicate()
+	output.lock()
+	for y in range(output.get_height()):
+		for x in range(output.get_width()):
+			var pixel := output.get_pixel(x, y)
+			var r: int = int(round(pixel.r * 255.0))
+			var g: int = int(round(pixel.g * 255.0))
+			var b: int = int(round(pixel.b * 255.0))
+			var segment_id: int = r + g * 256 + b * 256 * 256
+			if randomized_colors.has(segment_id):
+				output.set_pixel(x, y, randomized_colors[segment_id])
+	output.unlock()
+
+	return output
 
 func set_selected_segment(segment_id: int, iou: float) -> void:
 	if segment_id == -1:

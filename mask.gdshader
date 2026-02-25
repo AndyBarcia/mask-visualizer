@@ -2,6 +2,7 @@ shader_type canvas_item;
 
 uniform sampler2D base_image : filter_nearest;
 uniform sampler2D panoptic_ground_truth : filter_nearest;
+uniform sampler2D overlay_panoptic : filter_nearest;
 
 // Size of the Control in pixels (set from script)
 uniform vec2 control_size = vec2(1920.0, 1080.0);
@@ -86,7 +87,7 @@ void fragment() {
 		}
 	}
 
-	vec3 overlay_color = gt.rgb;
+	vec3 overlay_color = texture(overlay_panoptic, tex_uv).rgb;
 	vec3 result_rgb = mix(base.rgb, overlay_color, a);
 
 	COLOR = vec4(result_rgb, 1.0);

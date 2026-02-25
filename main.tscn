@@ -84,6 +84,10 @@ layout_mode = 2
 button_pressed = true
 text = "Show bounding boxes"
 
+[node name="RandomizeDenseColorsCheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+layout_mode = 2
+text = "Randomize dense instances"
+
 [node name="OverlayAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
 layout_mode = 2
 text = "Overlay"
@@ -127,6 +131,7 @@ layout_mode = 2
 [connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/NextButton" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_next_image"]
 [connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/CheckBox" to="VBoxContainer/ViewController" method="set_view_sync"]
 [connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/BoundingBoxesCheckBox" to="VBoxContainer/ViewController" method="set_show_bounding_boxes"]
+[connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/RandomizeDenseColorsCheckBox" to="VBoxContainer/ViewController" method="set_randomize_dense_instance_colors"]
 [connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/OverlayAlphaSlider" to="VBoxContainer/ViewController" method="set_overlay_alpha"]
 [connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/HighlightAlphaSlider" to="VBoxContainer/ViewController" method="set_highlight_alpha"]
 [connection signal="on_dataset_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_dataset_folder_selected"]

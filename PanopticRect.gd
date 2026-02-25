@@ -81,14 +81,18 @@ func _pick_mask(screen_pos: Vector2, append_selection: bool, remove_selection: b
 
 	emit_signal("segment_clicked", id, append_selection, remove_selection)
 
-func update_shader_image(image, panoptic_image) -> void:
+func update_shader_image(image, panoptic_image, overlay_image = null) -> void:
 	var tex := ImageTexture.create_from_image(image)
 	var gt_tex := ImageTexture.create_from_image(panoptic_image)
+	if overlay_image == null:
+		overlay_image = panoptic_image
+	var overlay_tex := ImageTexture.create_from_image(overlay_image)
 
 	var mat := material
 	if mat is ShaderMaterial:
 		mat.set_shader_parameter("base_image", tex)
 		mat.set_shader_parameter("panoptic_ground_truth", gt_tex)
+		mat.set_shader_parameter("overlay_panoptic", overlay_tex)
 
 	# Use the panoptic image for UV calculations
 	set_reference_image(panoptic_image)

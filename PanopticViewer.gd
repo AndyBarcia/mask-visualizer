@@ -31,30 +31,25 @@ func _apply_panoptic_overlay() -> void:
 	$Image.update_shader_image(current_base_image, current_panoptic_image, overlay_image)
 
 func _build_randomized_overlay(panoptic_image: Image, segments: Dictionary) -> Image:
-	var category_counts: Dictionary = {}
-	for seg_id in segments.keys():
-		var category_name := str(segments[seg_id])
-		category_counts[category_name] = int(category_counts.get(category_name, 0)) + 1
+	var category_segments: Dictionary = {}
+	for seg_key in segments.keys():
+		var segment_id := int(seg_key)
+		var category_name := str(segments[seg_key])
+		if not category_segments.has(category_name):
+			category_segments[category_name] = []
+		category_segments[category_name].append(segment_id)
 
 	var randomized_colors: Dictionary = {}
-	for seg_id in segments.keys():
-		var category_name := str(segments[seg_id])
-		if int(category_counts.get(category_name, 0)) <= 2:
+	for category_name in category_segments.keys():
+		var segment_ids: Array = category_segments[category_name]
+		if segment_ids.size() <= 2:
 			continue
-
-		var id := int(seg_id)
-		var rng := RandomNumberGenerator.new()
-		rng.seed = int(id)
-		var hue := rng.randf()
-		var sat := rng.randf_range(0.65, 0.95)
-		var val := rng.randf_range(0.8, 1.0)
-		randomized_colors[id] = Color.from_hsv(hue, sat, val)
+		_assign_maximally_separated_colors(segment_ids, category_name, randomized_colors)
 
 	if randomized_colors.is_empty():
 		return panoptic_image
 
 	var output := panoptic_image.duplicate()
-	output.lock()
 	for y in range(output.get_height()):
 		for x in range(output.get_width()):
 			var pixel := output.get_pixel(x, y)
@@ -64,9 +59,31 @@ func _build_randomized_overlay(panoptic_image: Image, segments: Dictionary) -> I
 			var segment_id: int = r + g * 256 + b * 256 * 256
 			if randomized_colors.has(segment_id):
 				output.set_pixel(x, y, randomized_colors[segment_id])
-	output.unlock()
 
 	return output
+
+func _assign_maximally_separated_colors(segment_ids: Array, category_name: String, color_map: Dictionary) -> void:
+	segment_ids.sort()
+	var count := segment_ids.size()
+	if count == 0:
+		return
+
+	var category_offset := _stable_hash_01(category_name)
+	var sat_levels := [0.72, 0.9]
+	var val_levels := [0.95, 0.8]
+	for idx in range(count):
+		var segment_id := int(segment_ids[idx])
+		var frac := (float(idx) + 0.5) / float(count)
+		var hue := fmod(category_offset + frac, 1.0)
+		var sat := sat_levels[idx % sat_levels.size()]
+		var val := val_levels[(idx / int(sat_levels.size())) % int(val_levels.size())]
+		color_map[segment_id] = Color.from_hsv(hue, sat, val)
+
+func _stable_hash_01(value: String) -> float:
+	var hash_value := 2166136261
+	for i in range(value.length()):
+		hash_value = int((hash_value ^ value.unicode_at(i)) * 16777619) & 0x7fffffff
+	return float(hash_value % 1000003) / 1000003.0
 
 func set_selected_segment(segment_id: int, iou: float) -> void:
 	if segment_id == -1:

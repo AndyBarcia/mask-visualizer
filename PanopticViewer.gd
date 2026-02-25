@@ -52,7 +52,7 @@ func _build_randomized_overlay(panoptic_image: Image, segments: Dictionary) -> I
 	var output := panoptic_image.duplicate()
 	for y in range(output.get_height()):
 		for x in range(output.get_width()):
-			var pixel := output.get_pixel(x, y)
+			var pixel : Color = output.get_pixel(x, y)
 			var r: int = int(round(pixel.r * 255.0))
 			var g: int = int(round(pixel.g * 255.0))
 			var b: int = int(round(pixel.b * 255.0))
@@ -75,8 +75,8 @@ func _assign_maximally_separated_colors(segment_ids: Array, category_name: Strin
 		var segment_id := int(segment_ids[idx])
 		var frac := (float(idx) + 0.5) / float(count)
 		var hue := fmod(category_offset + frac, 1.0)
-		var sat := sat_levels[idx % sat_levels.size()]
-		var val := val_levels[(idx / int(sat_levels.size())) % int(val_levels.size())]
+		var sat : float = sat_levels[idx % sat_levels.size()]
+		var val : float = val_levels[(idx / int(sat_levels.size())) % int(val_levels.size())]
 		color_map[segment_id] = Color.from_hsv(hue, sat, val)
 
 func _stable_hash_01(value: String) -> float:

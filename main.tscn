@@ -116,8 +116,8 @@ value = 0.85
 layout_mode = 2
 text = "Export views"
 
-[node name="FolderDialog" type="FileDialog" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors/ExportViewsButton"]
-title = "Export all views"
+[node name="FolderDialog" type="FileDialog" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors/ExportViewsButton" unique_id=2030905920]
+title = "Open a Directory"
 file_mode = 2
 access = 2
 use_native_dialog = true
@@ -150,4 +150,3 @@ layout_mode = 2
 [connection signal="on_detections_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_detections_folder_selected"]
 [connection signal="on_folder_selected" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_dataset_folder_selected"]
 [connection signal="panzoom_sync" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_panzoom_sync"]
-[connection signal="segment_clicked" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_segment_clicked" binds= ["gt", -1]]

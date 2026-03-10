@@ -243,22 +243,19 @@ func _on_export_views_folder_selected(folder: String) -> void:
 			push_error("Unable to create export folder: %s" % folder)
 			return
 
-	var base_image := gt_view.get_base_image()
+	var base_image : Image = gt_view.get_base_image()
 	if base_image != null:
 		_save_image_to_folder(folder, "00_base_image", base_image)
 
-	var gt_capture := gt_view.capture_current_view_image()
+	var gt_capture : Image = gt_view.capture_current_view_image()
 	if gt_capture != null:
 		_save_image_to_folder(folder, "01_ground_truths", gt_capture)
 
 	for i in range(dt_views.size()):
-		var captured := dt_views[i].capture_current_view_image()
+		var captured : Image = dt_views[i].capture_current_view_image()
 		if captured == null:
 			continue
-		var view_name := "view_%d" % (i + 1)
-		if dt_views[i].name != "":
-			view_name = dt_views[i].name
-		_save_image_to_folder(folder, "%02d_%s" % [i + 2, _sanitize_file_name(view_name)], captured)
+		_save_image_to_folder(folder, "%02d_%s" % [i + 2, "prediction"], captured)
 
 func _save_image_to_folder(folder: String, file_stem: String, image: Image) -> void:
 	var file_path := folder.path_join(file_stem + ".png")

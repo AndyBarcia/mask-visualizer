@@ -28,6 +28,8 @@ func _ready() -> void:
 	gt_view = get_node(gt_view_path)
 	_apply_visual_settings(gt_view)
 	gt_view.set_randomize_dense_instance_colors(randomize_dense_instance_colors)
+	if not gt_view.segment_clicked.is_connected(_on_segment_clicked.bind("gt", -1)):
+		gt_view.segment_clicked.connect(_on_segment_clicked.bind("gt", -1))
 
 func set_num_views(num_views: int) -> void:
 	num_views = max(num_views, 0)

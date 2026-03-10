@@ -150,3 +150,4 @@ layout_mode = 2
 [connection signal="on_detections_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_detections_folder_selected"]
 [connection signal="on_folder_selected" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_dataset_folder_selected"]
 [connection signal="panzoom_sync" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_panzoom_sync"]
+[connection signal="segment_clicked" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_segment_clicked" binds= ["gt", -1]]

@@ -156,36 +156,46 @@ func _on_export_file_selected(path: String) -> void:
 	if not target_path.to_lower().ends_with(".png"):
 		target_path += ".png"
 
+	var output := capture_current_view_image()
+	if output == null:
+		return
+
+	var err := output.save_png(target_path)
+	if err != OK:
+		push_error("Unable to export PNG: %s" % target_path)
+
+func get_base_image() -> Image:
+	return current_base_image
+
+func capture_current_view_image() -> Image:
+
 	var image_control: ZoomPanRect = $Image
 	if not is_instance_valid(image_control):
 		push_error("Unable to export view: image control is missing")
-		return
+		return null
 
 	var viewport_texture := get_viewport().get_texture()
 	if viewport_texture == null:
 		push_error("Unable to export view: viewport texture is unavailable")
-		return
+		return null
 
 	var full_frame := viewport_texture.get_image()
 	if full_frame == null:
 		push_error("Unable to export view: viewport image is unavailable")
-		return
+		return null
 
 	var crop_rect := _get_visible_shader_rect_in_viewport(image_control)
 	if crop_rect.size.x <= 0 or crop_rect.size.y <= 0:
 		push_error("Unable to export view: image control has an invalid visible size")
-		return
+		return null
 
 	var frame_bounds := Rect2i(Vector2i.ZERO, full_frame.get_size())
 	var clipped_rect := crop_rect.intersection(frame_bounds)
 	if clipped_rect.size.x <= 0 or clipped_rect.size.y <= 0:
 		push_error("Unable to export view: image control is outside of viewport")
-		return
+		return null
 
-	var output := full_frame.get_region(clipped_rect)
-	var err := output.save_png(target_path)
-	if err != OK:
-		push_error("Unable to export PNG: %s" % target_path)
+	return full_frame.get_region(clipped_rect)
 
 func _get_visible_shader_rect_in_viewport(image_control: ZoomPanRect) -> Rect2i:
 	var global_rect := image_control.get_global_rect()

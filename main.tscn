@@ -112,6 +112,16 @@ max_value = 1.0
 step = 0.01
 value = 0.85
 
+[node name="ExportViewsButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=188001224]
+layout_mode = 2
+text = "Export views"
+
+[node name="FolderDialog" type="FileDialog" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors/ExportViewsButton"]
+title = "Export all views"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
 [node name="ViewController" type="HBoxContainer" parent="VBoxContainer" unique_id=254789791]
 layout_mode = 2
 size_flags_vertical = 3
@@ -134,6 +144,8 @@ layout_mode = 2
 [connection signal="toggled" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/RandomizeDenseColorsCheckBox" to="VBoxContainer/ViewController" method="set_randomize_dense_instance_colors"]
 [connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/OverlayAlphaSlider" to="VBoxContainer/ViewController" method="set_overlay_alpha"]
 [connection signal="value_changed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/HighlightAlphaSlider" to="VBoxContainer/ViewController" method="set_highlight_alpha"]
+[connection signal="pressed" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/ExportViewsButton" to="VBoxContainer/ViewController" method="_on_export_views_pressed"]
+[connection signal="dir_selected" from="VBoxContainer/PanelContainer/MarginContainer/Selectors/ExportViewsButton/FolderDialog" to="VBoxContainer/ViewController" method="_on_export_views_folder_selected"]
 [connection signal="on_dataset_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_dataset_folder_selected"]
 [connection signal="on_detections_folder_selected" from="VBoxContainer/ViewController" to="VBoxContainer/PanelContainer/MarginContainer/Selectors" method="_detections_folder_selected"]
 [connection signal="on_folder_selected" from="VBoxContainer/ViewController/Ground Truths" to="VBoxContainer/ViewController" method="_on_dataset_folder_selected"]

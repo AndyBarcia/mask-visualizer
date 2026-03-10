@@ -230,6 +230,51 @@ func _on_dataset_folder_selected(folder: String) -> void:
 func _on_detections_folder_selected(folder: String, view: int) -> void:
 	emit_signal("on_detections_folder_selected", folder, view)
 
+func _on_export_views_pressed() -> void:
+	$"../PanelContainer/MarginContainer/Selectors/ExportViewsButton/FolderDialog".popup_centered_ratio(0.6)
+
+func _on_export_views_folder_selected(folder: String) -> void:
+	if folder == "":
+		return
+
+	if not DirAccess.dir_exists_absolute(folder):
+		var mkdir_err := DirAccess.make_dir_recursive_absolute(folder)
+		if mkdir_err != OK:
+			push_error("Unable to create export folder: %s" % folder)
+			return
+
+	var base_image := gt_view.get_base_image()
+	if base_image != null:
+		_save_image_to_folder(folder, "00_base_image", base_image)
+
+	var gt_capture := gt_view.capture_current_view_image()
+	if gt_capture != null:
+		_save_image_to_folder(folder, "01_ground_truths", gt_capture)
+
+	for i in range(dt_views.size()):
+		var captured := dt_views[i].capture_current_view_image()
+		if captured == null:
+			continue
+		var view_name := "view_%d" % (i + 1)
+		if dt_views[i].name != "":
+			view_name = dt_views[i].name
+		_save_image_to_folder(folder, "%02d_%s" % [i + 2, _sanitize_file_name(view_name)], captured)
+
+func _save_image_to_folder(folder: String, file_stem: String, image: Image) -> void:
+	var file_path := folder.path_join(file_stem + ".png")
+	var err := image.save_png(file_path)
+	if err != OK:
+		push_error("Unable to export PNG: %s" % file_path)
+
+func _sanitize_file_name(value: String) -> String:
+	var sanitized := value.to_lower().strip_edges()
+	if sanitized == "":
+		return "view"
+	var invalid_chars := ["/", "\\", ":", "*", "?", "\"", "<", ">", "|"]
+	for ch in invalid_chars:
+		sanitized = sanitized.replace(ch, "_")
+	return sanitized.replace(" ", "_")
+
 func set_show_bounding_boxes(visible_bboxes: bool) -> void:
 	show_bounding_boxes = visible_bboxes
 	_apply_visual_settings(gt_view)

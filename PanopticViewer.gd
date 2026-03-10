@@ -135,8 +135,8 @@ func set_panzoom_like(other) -> void:
 	$Image.zoom = other.get_child(1).zoom
 	$Image._update_shader_zoompan()
 
-func set_show_bounding_boxes(is_visible: bool) -> void:
-	$Image.set_bounding_boxes_visible(is_visible)
+func set_show_bounding_boxes(visible_bboxes: bool) -> void:
+	$Image.set_bounding_boxes_visible(visible_bboxes)
 
 func set_overlay_alpha(alpha: float) -> void:
 	$Image.set_overlay_alpha(alpha)

@@ -21,6 +21,19 @@ func _init() -> void:
 	_shader = _rd.shader_create_from_spirv(shader_spirv)
 	_pipeline = _rd.compute_pipeline_create(_shader)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		_cleanup_gpu()
+
+func _cleanup_gpu() -> void:
+	if _rd == null:
+		return
+	# Free the shader, which also frees dependent pipelines.
+	if _shader.is_valid():
+		_rd.free_rid(_shader)
+	_rd.free()
+	_rd = null
+
 func compute_bounds_uv(image: Image) -> Dictionary:
 	if image == null:
 		return {}
@@ -62,8 +75,8 @@ func compute_bounds_uv(image: Image) -> Dictionary:
 	var bytes := _rd.buffer_get_data(bbox_buffer)
 	var bounds := _parse_bounds_uv(bytes, width, height)
 
-	_rd.free_rid(sampler)
 	_rd.free_rid(uniform_set)
+	_rd.free_rid(sampler)
 	_rd.free_rid(bbox_buffer)
 	_rd.free_rid(texture_rid)
 
@@ -119,7 +132,7 @@ func _create_bbox_buffer() -> RID:
 
 	return _rd.storage_buffer_create(data.size(), data)
 
-func _create_uniform(binding: int, type: int, ids: Array) -> RDUniform:
+func _create_uniform(binding: int, type: RenderingDevice.UniformType, ids: Array) -> RDUniform:
 	var u := RDUniform.new()
 	u.binding = binding
 	u.uniform_type = type

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://h1gopvd554xk"
+path="res://.godot/imported/compute_panoptic_bboxes.glsl-de289c6cc91fa527f48c9e12e983a880.res"
+
+[deps]
+
+source_file="res://compute_panoptic_bboxes.glsl"
+dest_files=["res://.godot/imported/compute_panoptic_bboxes.glsl-de289c6cc91fa527f48c9e12e983a880.res"]
+
+[params]
+

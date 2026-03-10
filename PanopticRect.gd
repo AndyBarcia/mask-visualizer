@@ -41,8 +41,8 @@ func set_selected_ids(ids: Array[int]) -> void:
 		mat.set_shader_parameter("selected_count", ids.size())
 		mat.set_shader_parameter("selected_ids", shader_ids)
 
-func set_bounding_boxes_visible(is_visible: bool) -> void:
-	$BoundingBoxOverlay.visible = is_visible
+func set_bounding_boxes_visible(visible_bboxes: bool) -> void:
+	$BoundingBoxOverlay.visible = visible_bboxes
 
 func set_overlay_alpha(alpha: float) -> void:
 	var mat := material

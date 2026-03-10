@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://hw8du647wlpi"]
+[gd_scene format=3 uid="uid://hw8du647wlpi"]
 
 [ext_resource type="Script" uid="uid://dyx8bh3pjmm1u" path="res://selectors.gd" id="1_1bvp3"]
 [ext_resource type="Script" uid="uid://cvjvscs8va6h2" path="res://controller.gd" id="2_7mycd"]
@@ -21,7 +21,7 @@ echo = true
 [sub_resource type="Shortcut" id="Shortcut_5vw27"]
 events = [SubResource("InputEventKey_272bh")]
 
-[node name="main" type="Control"]
+[node name="main" type="Control" unique_id=416353459]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,7 +29,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=274349131]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,62 +37,62 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer" unique_id=937784147]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PanelContainer" unique_id=1109073548]
 layout_mode = 2
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="Selectors" type="HBoxContainer" parent="VBoxContainer/PanelContainer/MarginContainer"]
+[node name="Selectors" type="HBoxContainer" parent="VBoxContainer/PanelContainer/MarginContainer" unique_id=1532895792]
 layout_mode = 2
 theme_override_constants/separation = 5
 script = ExtResource("1_1bvp3")
 
-[node name="ViewsSpinBox" type="SpinBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="ViewsSpinBox" type="SpinBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=1614753797]
 layout_mode = 2
 max_value = 3.0
 rounded = true
 suffix = "views"
 
-[node name="ImageInput" type="LineEdit" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="ImageInput" type="LineEdit" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=641091471]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 placeholder_text = "Image"
 
-[node name="PrevButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="PrevButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=251298816]
 layout_mode = 2
 shortcut = SubResource("Shortcut_272bh")
 text = "Previous"
 
-[node name="NextButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="NextButton" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=684203798]
 layout_mode = 2
 shortcut = SubResource("Shortcut_5vw27")
 text = "Next
 "
 
-[node name="CheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=1967222546]
 layout_mode = 2
 button_pressed = true
 text = "Sync view"
 
-[node name="BoundingBoxesCheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="BoundingBoxesCheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=270315905]
 layout_mode = 2
 button_pressed = true
 text = "Show bounding boxes"
 
-[node name="RandomizeDenseColorsCheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="RandomizeDenseColorsCheckBox" type="CheckBox" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=1597147820]
 layout_mode = 2
 text = "Randomize dense instances"
 
-[node name="OverlayAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="OverlayAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=1995810449]
 layout_mode = 2
 text = "Overlay"
 
-[node name="OverlayAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="OverlayAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=651922960]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_vertical = 4
@@ -100,11 +100,11 @@ max_value = 1.0
 step = 0.01
 value = 0.4
 
-[node name="HighlightAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="HighlightAlphaLabel" type="Label" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=786772920]
 layout_mode = 2
 text = "Highlight"
 
-[node name="HighlightAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors"]
+[node name="HighlightAlphaSlider" type="HSlider" parent="VBoxContainer/PanelContainer/MarginContainer/Selectors" unique_id=1574492028]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 size_flags_vertical = 4
@@ -112,7 +112,7 @@ max_value = 1.0
 step = 0.01
 value = 0.85
 
-[node name="ViewController" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ViewController" type="HBoxContainer" parent="VBoxContainer" unique_id=254789791]
 layout_mode = 2
 size_flags_vertical = 3
 script = ExtResource("2_7mycd")
@@ -120,7 +120,7 @@ gt_view_path = NodePath("Ground Truths")
 label_node = NodePath("Ground Truths/BottomPanel/Label")
 dt_view_scene = ExtResource("3_h2yge")
 
-[node name="Ground Truths" parent="VBoxContainer/ViewController" instance=ExtResource("3_h2yge")]
+[node name="Ground Truths" parent="VBoxContainer/ViewController" unique_id=1830573811 instance=ExtResource("3_h2yge")]
 layout_mode = 2
 
 [connection signal="image_selected" from="VBoxContainer/PanelContainer/MarginContainer/Selectors" to="VBoxContainer/ViewController" method="load_image_pair"]

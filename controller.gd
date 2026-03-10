@@ -230,8 +230,8 @@ func _on_dataset_folder_selected(folder: String) -> void:
 func _on_detections_folder_selected(folder: String, view: int) -> void:
 	emit_signal("on_detections_folder_selected", folder, view)
 
-func set_show_bounding_boxes(is_visible: bool) -> void:
-	show_bounding_boxes = is_visible
+func set_show_bounding_boxes(visible_bboxes: bool) -> void:
+	show_bounding_boxes = visible_bboxes
 	_apply_visual_settings(gt_view)
 	for v in dt_views:
 		_apply_visual_settings(v)
